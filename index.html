@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/favicon.ico" />
+    <title>جملة الجملة | منتجات السوق المصري بالجملة</title>
+    <meta
+      name="description"
+      content="جملة الجملة — موقعك لشراء منتجات السوق المصري بالجملة: شاي، لبان، ملبس، كيك، مصاصات وحلويات بأسعار المصنع."
+    />
+    <meta
+      name="keywords"
+      content="جملة الجملة, منتجات جملة, سوق مصري, شاي جملة, لبان جملة, حلويات جملة"
+    />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:title"
+      content="جملة الجملة | منتجات الجملة في السوق المصري"
+    />
+    <meta
+      property="og:description"
+      content="تسوق منتجات الجملة من السوق المصري — شاي، لبان، ملبس، كيك، مصاصات بالجملة."
+    />
+    <meta property="og:image" content="/logo.png" />
+    <meta property="og:url" content="https://jomlet-al-jomla.publicvm.com" />
+
+    <link rel="canonical" href="https://jomlet-al-jomla.publicvm.com" />
+    <meta name="theme-color" content="#e63946" />
+
+    <!-- Loader CSS -->
+    <style>
+      #preloader {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #fff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+      }
+      #preloader img {
+        width: 150px;
+        animation: spin 1.5s linear infinite;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Pre-mount Loader -->
+    <div id="preloader">
+      <img src="/log.svg" alt="Loading..." />
+    </div>
+
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+
+    <!-- إزالة Loader بعد تحميل الصفحة -->
+    <script>
+      window.addEventListener("load", () => {
+        const preloader = document.getElementById("preloader");
+        if (preloader) {
+          preloader.style.opacity = 0;
+          setTimeout(() => preloader.remove(), 500);
+        }
+      });
+    </script>
+  </body>
+</html>
