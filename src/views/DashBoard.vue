@@ -43,6 +43,8 @@ export default {
         { titel: "اعدادات", url: "Settings", icon: "mdi-cart" },
         { titel: "الاستفسارات", url: "QueriesShow", icon: "mdi-cart" },
         { titel: "طلبات سحب الارباح", url: "Requests", icon: "mdi-cart" },
+        { titel: " اداره الموردين", url: "Suppleir", icon: "mdi-cart" },
+        { titel: " عمل طلبية لمورد ", url: "orderSuppler", icon: "mdi-cart" },
       ],
     };
   },

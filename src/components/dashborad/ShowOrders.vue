@@ -253,6 +253,9 @@
             <strong>id العميل :</strong> {{ order.userorder.id }}
           </div>
           <div class="text-body-2 mb-2">
+            <strong>طريقه الدفع :</strong> {{ order.payment_method }}
+          </div>
+          <div class="text-body-2 mb-2">
             <strong> الموقع :</strong>
             {{ order.userorder.latitude }}
             {{ order.userorder.longitude }}

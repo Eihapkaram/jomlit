@@ -8,10 +8,22 @@
   >
     <!-- 🏠 الصفحة الرئيسية -->
     <v-btn
+      v-if="store.userRole !== 'supplier'"
       variant="text"
       class="footer-btn"
       :class="{ active: $route.name === 'home' }"
       :to="{ name: 'home' }"
+    >
+      <v-icon size="26" color="darkgold">mdi-home-outline</v-icon>
+      <span>الرئيسية</span>
+    </v-btn>
+    <!-- 🏠للمورد   الصفحة الرئيسية -->
+    <v-btn
+      v-if="store.userRole === 'supplier'"
+      variant="text"
+      class="footer-btn"
+      :class="{ active: $route.name === 'supplierhome' }"
+      :to="{ name: 'supplierhome' }"
     >
       <v-icon size="26" color="darkgold">mdi-home-outline</v-icon>
       <span>الرئيسية</span>
@@ -38,6 +50,17 @@
     >
       <v-icon size="26" color="darkgold">mdi-credit-card-outline</v-icon>
       <span>مشترياتي</span>
+    </v-btn>
+    <!-- الطلبيات المرسلة للمورد )-->
+    <v-btn
+      v-if="store.userRole === 'supplier'"
+      variant="text"
+      class="footer-btn"
+      :class="{ active: $route.name === 'SupplierOrder' }"
+      :to="{ name: 'SupplierOrder' }"
+    >
+      <v-icon size="26" color="darkgold">mdi-cart-plus</v-icon>
+      <span> طلبيات مرسلة </span>
     </v-btn>
 
     <!-- 👥 إدارة العملاء (للبائع فقط) -->

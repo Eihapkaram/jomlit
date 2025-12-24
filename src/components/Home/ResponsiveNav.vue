@@ -90,7 +90,11 @@
           </div>
 
           <!-- السلة -->
-          <div id="gropicon-text" @click="openCart()">
+          <div
+            v-if="userRole !== 'supplier'"
+            id="gropicon-text"
+            @click="openCart()"
+          >
             <img
               src="https://cdn-icons-png.flaticon.com/512/1170/1170678.png"
               width="35"
@@ -109,7 +113,11 @@
           </div>
 
           <!-- المفضلة -->
-          <div id="gropicon-text" @click="$router.push({ name: 'listpage' })">
+          <div
+            v-if="userRole !== 'supplier'"
+            id="gropicon-text"
+            @click="$router.push({ name: 'listpage' })"
+          >
             <img
               src="https://cdn-icons-png.flaticon.com/512/833/833472.png"
               width="35"
@@ -147,7 +155,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(mystore, ["catigoryies"]),
+    ...mapState(mystore, ["catigoryies", "userRole"]),
     ...mapState(CartStore1, ["CartProduct2"]),
     ...mapState(ListsStore1, ["list"]),
   },

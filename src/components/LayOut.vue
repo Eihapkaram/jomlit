@@ -47,6 +47,7 @@
         <v-list style="display: block; padding-inline: 10px; margin-top: 15px">
           <!-- مشترياتي -->
           <v-list-item
+            v-if="userRole !== 'supplier'"
             id="link0"
             hover
             @click="$router.push({ name: 'mypayes' })"
@@ -70,9 +71,22 @@
               ادارة العملاء
             </div>
           </v-list-item>
+          <!-- اداره طلبيات المورد  -->
+          <v-list-item
+            v-if="userRole == 'supplier'"
+            id="link0"
+            hover
+            @click="$router.push({ name: 'SupplierOrder' })"
+          >
+            <div style="display: flex; align-items: center; color: #333">
+              <v-icon color="#1976d2" class="me-2">mdi-cart-plus</v-icon>
+              الطلبيات المرسلة
+            </div>
+          </v-list-item>
 
           <!-- قائمتي المفضلة -->
           <v-list-item
+            v-if="userRole !== 'supplier'"
             id="link0"
             hover
             @click="$router.push({ name: 'listpage' })"
@@ -85,7 +99,7 @@
 
           <!-- حسابي الشخصي -->
           <v-list-item
-            v-if="userRole == 'customer'"
+            v-if="userRole == 'customer' || 'supplier'"
             id="link0"
             hover
             @click="
@@ -147,7 +161,14 @@
           </v-list-item>
         </v-list>
         <v-list-item id="link0">
-          <router-link :to="{ name: 'home' }">الرئيسية</router-link>
+          <router-link v-if="userRole !== 'supplier'" :to="{ name: 'home' }"
+            >الرئيسية</router-link
+          >
+          <router-link
+            v-if="userRole == 'supplier'"
+            :to="{ name: 'supplierhome' }"
+            >الرئيسية</router-link
+          >
         </v-list-item>
         <v-list-item
           v-for="(cat, i) in page.slice(0, 5)"
@@ -234,6 +255,7 @@
       <v-row class="px-3 mt-6">
         <span style="position: relative; width: 100%; left: 0px">
           <v-form
+            v-if="userRole !== 'supplier'"
             id="formsearch"
             style="
               display: flex;
@@ -277,6 +299,7 @@
       <v-list style="display: block; padding-inline: 10px; margin-top: 15px">
         <!-- مشترياتي -->
         <v-list-item
+          v-if="userRole !== 'supplier'"
           id="link0"
           hover
           @click="$router.push({ name: 'mypayes' })"
@@ -291,6 +314,7 @@
 
         <!-- قائمتي المفضلة -->
         <v-list-item
+          v-if="userRole !== 'supplier'"
           id="link0"
           hover
           @click="$router.push({ name: 'listpage' })"
@@ -326,10 +350,22 @@
             ادارة العملاء
           </div>
         </v-list-item>
+        <!-- اداره طلبيات المورد  -->
+        <v-list-item
+          v-if="userRole == 'supplier'"
+          id="link0"
+          hover
+          @click="$router.push({ name: 'SupplierOrder' })"
+        >
+          <div style="display: flex; align-items: center; color: #333">
+            <v-icon color="#1976d2" class="me-2">mdi-cart-plus</v-icon>
+            الطلبيات المرسلة
+          </div>
+        </v-list-item>
 
         <!-- حسابي الشخصي -->
         <v-list-item
-          v-if="userRole == 'customer'"
+          v-if="userRole == 'customer' || 'supplier'"
           id="link0"
           hover
           @click="
@@ -641,7 +677,13 @@
             </v-btn>
 
             <!-- السلة -->
-            <v-btn icon variant="text" color="#444" @click="this.openCart()">
+            <v-btn
+              v-if="userRole !== 'supplier'"
+              icon
+              variant="text"
+              color="#444"
+              @click="this.openCart()"
+            >
               <v-badge
                 :content="this.CartProduct2.length"
                 color="#c79a00"
@@ -691,6 +733,7 @@
 
             <!-- المفضلة -->
             <v-btn
+              v-if="userRole !== 'supplier'"
               icon
               variant="text"
               color="#444"
@@ -719,7 +762,16 @@
             sm="8"
             class="d-flex flex-wrap justify-center justify-sm-start gap-3"
           >
-            <router-link :to="{ name: 'home' }" class="nav-link"
+            <router-link
+              class="nav-link"
+              v-if="userRole !== 'supplier'"
+              :to="{ name: 'home' }"
+              >الرئيسية</router-link
+            >
+            <router-link
+              class="nav-link"
+              v-if="userRole == 'supplier'"
+              :to="{ name: 'supplierhome' }"
               >الرئيسية</router-link
             >
             <router-link

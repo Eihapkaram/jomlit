@@ -23,6 +23,7 @@
 
       <!-- عرض الطلبات -->
       <v-col
+        v-show="this.userRole !== 'supplier'"
         v-for="order in userorders"
         :key="order.id"
         cols="12"
@@ -158,6 +159,190 @@
               >
             </div>
 
+            <!-- أزرار -->
+            <div
+              style="display: flex; flex-flow: column; gap: 10px"
+              v-if="!['shipped', 'completed', 'paid'].includes(order.status)"
+            >
+              <div v-show="!order.seller_id">
+                <v-btn
+                  v-if="order.status === 'cancelled'"
+                  color="blue"
+                  variant="tonal"
+                  size="small"
+                  @click="updateStatus(order.id, 'pending')"
+                >
+                  <v-icon start>mdi-refresh</v-icon>
+                  إعادة الطلب
+                </v-btn>
+
+                <v-btn
+                  v-else
+                  v-show="order.status !== 'cancelled'"
+                  color="red"
+                  variant="tonal"
+                  size="small"
+                  @click="updateStatus(order.id, 'cancelled')"
+                >
+                  <v-icon start>mdi-delete</v-icon>
+                  إلغاء الطلبية
+                </v-btn>
+              </div>
+
+              <div v-show="order.seller_id">
+                <v-btn
+                  v-show="order.approval_status !== 'approved'"
+                  color="red"
+                  style="margin-inline: 10px"
+                  variant="tonal"
+                  size="small"
+                  @click="
+                    order.seller_id
+                      ? RejectOrder(order.id)
+                      : RejectOrder(order.id)
+                  "
+                >
+                  <v-icon start>mdi-delete</v-icon>
+                  رفض الطلبية
+                </v-btn>
+
+                <v-btn
+                  v-show="
+                    order.seller_id && order.approval_status !== 'approved'
+                  "
+                  color="green"
+                  variant="tonal"
+                  size="small"
+                  @click="AcceptOrder(order.id)"
+                >
+                  <v-icon start>mdi-check</v-icon>
+                  تاكيد الطلبيه
+                </v-btn>
+              </div>
+
+              <v-btn
+                color="blue"
+                variant="tonal"
+                size="small"
+                @click="downinvoice(order.id)"
+              >
+                <v-icon start>mdi-invoice-list-outline</v-icon>
+                فاتورة الطلبية
+              </v-btn>
+            </div>
+          </div>
+        </v-card>
+      </v-col>
+      <v-col
+        v-show="userRole == 'supplier'"
+        v-for="order in userorders"
+        :key="order.id"
+        cols="12"
+        md="6"
+        lg="4"
+      >
+        <v-card
+          class="pa-4 rounded-xl elevation-3 hover-card"
+          style="border: 1px solid #ddd; background: white"
+        >
+          <!-- رأس الطلب -->
+          <div class="d-flex justify-space-between align-center mb-3">
+            <h3 v-if="!order.seller_id" class="text-h6 font-weight-bold">
+              طلبية رقم #{{ order.id }}
+            </h3>
+            <h3
+              style="color: lightcoral"
+              v-if="order.seller_id"
+              class="text-h6 font-weight-bold"
+            >
+              طلبية رقم #{{ order.id }} عملها ادارة جملة الجملة
+            </h3>
+            <v-chip
+              :color="getStatusColor(order.status)"
+              text-color="white"
+              small
+              label
+            >
+              {{ getStatusText(order.status) }}
+            </v-chip>
+          </div>
+
+          <v-divider class="mb-3"></v-divider>
+
+          <div v-if="order.seller_id">
+            <div class="text-body-2 mb-2">
+              <strong>اسم مسئول الي عملك الطلبية:</strong>
+              {{ order.seller.name }}
+            </div>
+            <div class="text-body-2 mb-2">
+              <strong> تليفون مسئول :</strong> {{ order.seller.phone }}
+            </div>
+          </div>
+
+          <div class="text-body-2 mb-2">
+            <strong>طريقة الدفع:</strong>
+            {{
+              order.payment_method === "cod"
+                ? "الدفع عند الاستلام"
+                : order.payment_method === "credit_card"
+                ? "بطاقة ائتمان"
+                : "PayPal"
+            }}
+          </div>
+
+          <!-- التاريخين -->
+          <div class="text-body-2 mb-2">
+            <strong>تاريخ الطلب:</strong>
+            {{ new Date(order.created_at).toLocaleDateString("ar-EG") }}
+          </div>
+          <div class="text-body-2 mb-2 text-success">
+            <strong>موعد التسليم المتوقع:</strong>
+            {{ getDeliveryDate(order.created_at) }}
+          </div>
+
+          <v-divider class="my-3"></v-divider>
+
+          <!-- تفاصيل المنتجات -->
+          <h4 class="text-subtitle-1 font-weight-medium mb-2">
+            تفاصيل المنتجات:
+          </h4>
+
+          <v-list density="compact">
+            <v-list-item
+              v-for="item in order.orderdetels"
+              :key="item.id"
+              class="px-2"
+            >
+              <v-list-item-avatar size="50">
+                <v-img
+                  v-if="item.product?.img"
+                  :src="domin + item.product.img"
+                  style="width: 100px; max-height: 200px"
+                  :alt="item.product.titel"
+                  loading="lazy"
+                  cover
+                ></v-img>
+                <v-icon v-else>mdi-image-off</v-icon>
+              </v-list-item-avatar>
+
+              <v-list-item-content>
+                <v-list-item-title class="font-weight-medium">
+                  {{ item.product?.titel || "منتج محذوف" }}
+                </v-list-item-title>
+                <v-list-item-subtitle>
+                  الكمية المطلوبة: {{ item.quantity }}
+                </v-list-item-subtitle>
+              </v-list-item-content>
+            </v-list-item>
+          </v-list>
+
+          <v-divider class="my-3"></v-divider>
+
+          <!-- أزرار التحكم -->
+          <div
+            style="display: flex; flex-flow: column; gap: 15px"
+            class="d-flex justify-space-between align-center"
+          >
             <!-- أزرار -->
             <div
               style="display: flex; flex-flow: column; gap: 10px"
