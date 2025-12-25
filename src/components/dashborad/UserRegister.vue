@@ -102,6 +102,15 @@
             class="mb-4"
           />
         </template>
+        <div style="display: flex; flex-flow: row; position: relative">
+          <router-link to="/terms">الشروط والأحكام</router-link>
+          <v-checkbox
+            v-model="terms_accepted"
+            label="أوافق على الشروط والأحكام"
+            color="primary"
+            class="mb-4"
+          />
+        </div>
 
         <div class="d-flex justify-center mb-4">
           <v-btn
@@ -220,6 +229,15 @@
             class="mb-4"
           />
         </template>
+        <div style="display: flex; flex-flow: row; position: relative">
+          <router-link to="/terms">الشروط والأحكام</router-link>
+          <v-checkbox
+            v-model="terms_accepted"
+            label="أوافق على الشروط والأحكام"
+            color="primary"
+            class="mb-4"
+          />
+        </div>
 
         <div class="d-flex justify-center mb-4">
           <v-btn
@@ -272,7 +290,7 @@ export default {
       name: "",
       phone: "",
       showPhoneForm: true,
-
+      terms_accepted: false,
       latitude: null,
       longitude: null,
       showLocationAlert: false,
@@ -329,6 +347,7 @@ export default {
       formData.append("longitude", this.longitude);
       formData.append("security_question", this.security_question);
       formData.append("security_answer", this.security_answer);
+      formData.append("terms_accepted", this.terms_accepted ? 1 : 0);
       formData.append("role", this.role);
       if (this.role === "seller") {
         formData.append("wallet_number", this.wallet_number);
@@ -370,6 +389,7 @@ export default {
       formData.append("longitude", this.longitude);
       formData.append("security_question", this.security_question);
       formData.append("security_answer", this.security_answer);
+      formData.append("terms_accepted", this.terms_accepted ? 1 : 0);
       formData.append("role", this.role);
       if (this.role === "seller") {
         formData.append("wallet_number", this.wallet_number);

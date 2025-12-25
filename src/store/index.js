@@ -40,7 +40,7 @@ export const mystore = defineStore("mystore", {
     userorders: "",
     CartData: "",
     CartData2: "",
-    domin: "https://web-production-273ed.up.railway.app/api/",
+    domin: "https://web-production-b1ce5.up.railway.app/api/",
   }),
 
   actions: {
