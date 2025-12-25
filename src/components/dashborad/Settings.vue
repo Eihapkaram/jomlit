@@ -56,6 +56,25 @@
         <v-text-field v-model="phone1" label="الهاتف 1" outlined />
         <v-text-field v-model="phone2" label="الهاتف 2" outlined />
         <v-text-field v-model="hotphone" label="الخط الساخن" outlined />
+        <!-- إضافة الحقول في الفورم -->
+        <v-textarea
+          v-model="terms_and_conditions"
+          label="شروط وأحكام الموقع"
+          outlined
+          rows="3"
+        />
+        <v-textarea
+          v-model="shipping_and_return_policy"
+          label="سياسة الشحن والإرجاع"
+          outlined
+          rows="3"
+        />
+        <v-textarea
+          v-model="privacy_policy"
+          label="سياسة الخصوصية"
+          outlined
+          rows="3"
+        />
 
         <v-btn type="submit" :loading="loading" color="primary" class="mt-4">
           تحديث الإعدادات
@@ -88,6 +107,9 @@ export default {
       phone1: "",
       phone2: "",
       hotphone: "",
+      terms_and_conditions: "", // جديد
+      shipping_and_return_policy: "", // جديد
+      privacy_policy: "", // جديد
     };
   },
   computed: {
@@ -133,6 +155,15 @@ export default {
         formData.append("phone1", this.phone1 || "");
         formData.append("phone2", this.phone2 || "");
         formData.append("hotphone", this.hotphone || "");
+        formData.append(
+          "terms_and_conditions",
+          this.terms_and_conditions || ""
+        );
+        formData.append(
+          "shipping_and_return_policy",
+          this.shipping_and_return_policy || ""
+        );
+        formData.append("privacy_policy", this.privacy_policy || "");
         if (this.logo) formData.append("logo", this.logo);
         if (this.signature) formData.append("signature", this.signature);
 
@@ -173,6 +204,10 @@ export default {
         this.phone1 = data.phone1 || "";
         this.phone2 = data.phone2 || "";
         this.hotphone = data.hotphone || "";
+        // عند جلب الإعدادات
+        this.terms_and_conditions = data.terms_and_conditions || "";
+        this.shipping_and_return_policy = data.shipping_and_return_policy || "";
+        this.privacy_policy = data.privacy_policy || "";
 
         const baseUrl = this.domin.replace("/api/", "/");
         this.logoPreview = data.logo ? `${baseUrl}storage/${data.logo}` : null;
