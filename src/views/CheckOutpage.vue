@@ -61,8 +61,8 @@
 
         <!-- اختيار طريقة الدفع -->
         <v-radio-group v-model="paymentMethod" required>
-          <v-radio label="الدفع الإلكتروني" value="online"></v-radio>
           <v-radio label="الدفع عند الاستلام" value="cod"></v-radio>
+          <v-radio label="الدفع الإلكتروني" value="online"></v-radio>
         </v-radio-group>
 
         <!-- نموذج الدفع الإلكتروني -->
@@ -319,7 +319,7 @@ export default {
       phoneError: "",
       payurl: "",
       order: "",
-      paymentMethod: "online",
+      paymentMethod: "cod",
       governorates: ["Cairo", "Giza"],
       cities: {
         Cairo: [

@@ -561,26 +561,27 @@ export default {
         this.showAlert("error", "فشل تنزيل الملف");
       }
     },
-
     async createSupplierOrder() {
       const token = localStorage.getItem("token");
+
       try {
         await axios.post(
-          `${this.domin}orders/supplier-create`,
+          `${this.domin}dashboard/orders/supplier-create`,
           {
             supplier_id: this.orderForm.supplier_id,
             items: [
               {
                 product_id: this.orderForm.product_id,
-                quantity: this.orderForm.quantity,
-                supplier_price: this.orderForm.supplier_price,
+                quantity: Number(this.orderForm.quantity),
+                supplier_price: Number(this.orderForm.supplier_price),
               },
             ],
-            total_price:
-              this.orderForm.quantity * this.orderForm.supplier_price,
           },
           {
-            headers: { Authorization: `Bearer ${token}` },
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
           }
         );
         this.showAlert("success", "تم إنشاء طلب التجهيز بنجاح ✅");

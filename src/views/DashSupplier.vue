@@ -163,48 +163,96 @@ export default {
   },
 
   methods: {
-    async fetchOrders() {
+    async fetchOrders(showNotify = false) {
       const token = localStorage.getItem("token");
       const res = await axios.get(`${this.domin}supplier/orders`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
+      const newOrders = res.data.filter((o) => o.status === "sent").length;
+
+      // 🔔 تنبيه لو في طلبات جديدة
+      if (showNotify && newOrders > this.lastOrdersCount) {
+        this.showAlert("info", "📦 في طلبات جديدة");
+      }
+
+      this.lastOrdersCount = newOrders;
       this.orders = res.data;
-      console.log(this.orders);
     },
 
-    acceptOrder(id) {
-      axios
-        .post(`${this.domin}dashboard/orders/${id}/accept`, {}, this.auth())
-        .then(() => this.fetchOrders());
-    },
+    async acceptOrder(orderId) {
+      const token = localStorage.getItem("token");
+      try {
+        await axios.post(
+          `${this.domin}supplier/orders/${orderId}/accept`,
+          {},
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
 
+        // تحديث محلي مباشر
+        const order = this.orders.find((o) => o.id === orderId);
+        if (order) order.status = "preparing";
+
+        this.showAlert("success", "تم قبول الطلب");
+      } catch {
+        this.showAlert("error", "فشل قبول الطلب");
+      }
+    },
     openReject(order) {
       this.selectedOrder = order;
       this.rejectDialog = true;
     },
 
-    confirmReject() {
-      axios
-        .post(
-          `${this.domin}dashboard/orders/${this.selectedOrder.id}/reject`,
-          { reason: this.rejectReason },
-          this.auth()
-        )
-        .then(() => {
-          this.rejectDialog = false;
-          this.rejectReason = "";
-          this.fetchOrders();
-        });
-    },
+    async confirmReject() {
+      if (!this.selectedOrder || !this.rejectReason) {
+        this.showAlert("error", "الرجاء كتابة سبب الرفض");
+        return;
+      }
 
-    downloadPdf(id) {
       const token = localStorage.getItem("token");
-      window.open(
-        `${this.domin}dashboard/orders/${id}/invoice?token=${token}`,
-        "_blank"
-      );
+      try {
+        await axios.post(
+          `${this.domin}supplier/orders/${this.selectedOrder.id}/reject`,
+          { reason: this.rejectReason },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        // تحديث محلي مباشر
+        this.selectedOrder.status = "cancelled";
+        this.selectedOrder.supplier_reject_reason = this.rejectReason;
+
+        this.rejectDialog = false;
+        this.rejectReason = "";
+        this.selectedOrder = null;
+
+        this.showAlert("success", "تم رفض الطلب");
+      } catch {
+        this.showAlert("error", "فشل رفض الطلب");
+      }
     },
 
+    async downloadPdf(orderId) {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get(
+          `${this.domin}supplier-orders/${orderId}/invoice`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+            responseType: "blob",
+          }
+        );
+
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", `order-${orderId}.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      } catch {
+        this.showAlert("error", "فشل تنزيل الفاتورة");
+      }
+    },
     auth() {
       return {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
@@ -238,6 +286,15 @@ export default {
 
   mounted() {
     this.fetchOrders();
+    // تحديث تلقائي كل 30 ثانية
+    this.intervalId = setInterval(() => {
+      this.fetchOrders(true);
+    }, 30000);
+  },
+  beforeUnmount() {
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+    }
   },
 };
 </script>
