@@ -22,7 +22,6 @@
           class="mb-4 rounded-xl shadow-sm border"
           variant="outlined"
         >
-          <pre>{{ note.data }}</pre>
           <v-card-title class="d-flex align-center justify-space-between">
             <div class="d-flex align-center gap-3">
               <v-icon :color="note.read_at ? 'grey' : '#c79a00'" size="26">
