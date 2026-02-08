@@ -5,7 +5,7 @@ export const CartStore1 = defineStore("CartS", {
   state: () => ({
     CartProduct: [],
     CartProduct2: [],
-    domin: "https://web-production-b89ce.up.railway.app/api/",
+    domin: "https://laravelapi-production-2492.up.railway.app/api/",
   }),
 
   actions: {
