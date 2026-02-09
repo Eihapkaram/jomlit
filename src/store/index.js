@@ -16,6 +16,8 @@ export const mystore = defineStore("mystore", {
     SingleProduct: "",
     searchCatigoryby: "",
     page: "",
+    getCategoriesBypageslug: "",
+    getProductsBycategoryslug: "",
     Notyf: "",
     NotyfCount: "",
     user: "",
@@ -100,7 +102,7 @@ export const mystore = defineStore("mystore", {
             subject: subject || null,
             message: message,
           },
-          { headers: { Authorization: `Bearer ${token}` } }
+          { headers: { Authorization: `Bearer ${token}` } },
         );
       } catch (err) {
         console.error(err.response?.data || err);
@@ -177,7 +179,7 @@ export const mystore = defineStore("mystore", {
           `${this.domin}dashboard/withdraw-requests`,
           {
             headers: { Authorization: `Bearer ${token}` },
-          }
+          },
         );
         this.AllRequst = res.data.withdraw_requests;
       } catch (err) {
@@ -202,7 +204,7 @@ export const mystore = defineStore("mystore", {
           `${this.domin}dashboard/allorderbyseller/ApprovedOrders`,
           {
             headers: { Authorization: `Bearer ${token}` },
-          }
+          },
         );
         this.ordersbySeller = res.data.orders;
       } catch (err) {
@@ -292,7 +294,7 @@ export const mystore = defineStore("mystore", {
 
         // مقارنة الإشعارات الجديدة باللي موجودة قبل كده
         const newNotifications = res.data.notifications.filter(
-          (n) => !this.lastNotificationId || n.id > this.lastNotificationId
+          (n) => !this.lastNotificationId || n.id > this.lastNotificationId,
         );
 
         if (newNotifications.length) {
@@ -335,7 +337,7 @@ export const mystore = defineStore("mystore", {
 
     async getCatigoryProduct1(catigory) {
       const res = await fetch(
-        `${this.domin}search/cate?filter[categorie.name]=${catigory}`
+        `${this.domin}search/cate?filter[categorie.name]=${catigory}`,
       );
       const data = await res.json();
       this.catigoryProducts1 = data.result;
@@ -397,12 +399,21 @@ export const mystore = defineStore("mystore", {
       const res = await fetch(`${this.domin}pageProducts/show`);
       const data = await res.json();
       this.page = data.pro;
-      console.log(data);
+    },
+    async getCategoriesByPageSlug(slug) {
+      const res = await fetch(`${this.domin}page/${slug}/categories`);
+      const data = await res.json();
+      this.getCategoriesBypageslug = data;
+    },
+    async getProductsByCategorySlug(slug) {
+      const res = await fetch(`${this.domin}category/${slug}/products`);
+      const data = await res.json();
+      this.getProductsBycategoryslug = data.products;
     },
 
     async getSearchProduct(query) {
       const res = await fetch(
-        `${this.domin}search/cate?filter[titel]=${query}`
+        `${this.domin}search/cate?filter[titel]=${query}`,
       );
       const data = await res.json();
       this.searchrsult = data.result;

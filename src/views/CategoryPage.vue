@@ -25,7 +25,7 @@
         <div class="categories-grid">
           <div
             class="category-item"
-            v-for="pro in displayedCategories"
+            v-for="pro in getCategoriesBypageslug"
             :key="pro.id"
           >
             <v-card
@@ -167,9 +167,11 @@ export default {
     ...mapActions(mystore, [
       "searchCatigorybyname",
       "getCatigoryProduct1",
+      "getCategoriesByPageSlug",
       "topsold",
     ]),
     ...mapActions(CartStore1, ["Additem", "Additem2", "GetCart"]),
+
     ...mapActions(ListsStore1, ["AdditemL", "updateL"]),
     toggleShowMore() {
       this.showAll = !this.showAll;
@@ -215,6 +217,7 @@ export default {
       "catigoryProducts1",
       "domin",
       "topsoldproducts",
+      "getCategoriesBypageslug",
     ]),
     displayedCategories() {
       return this.showAll
@@ -223,8 +226,8 @@ export default {
     },
   },
   async mounted() {
-    await this.getCatigoryProduct1("الاكثر");
     this.topsold(this.$route.params.catigory);
+    await this.getCategoriesByPageSlug(this.$route.params.catigory);
     await this.searchCatigorybyname(this.$route.params.catigory);
     window.scroll(0, 0);
     this.load = true;
@@ -239,7 +242,7 @@ export default {
     if (desc)
       desc.setAttribute(
         "content",
-        `منتجات قسم ${this.$route.params.catigory} بالجملة من السوق المصري.`
+        `منتجات قسم ${this.$route.params.catigory} بالجملة من السوق المصري.`,
       );
   },
   watch: {
@@ -248,6 +251,7 @@ export default {
       setTimeout(() => {
         this.searchCatigorybyname(this.$route.params.catigory);
         this.topsold(this.$route.params.catigory);
+        this.getCategoriesByPageSlug(this.$route.params.catigory);
         this.load = false;
       }, 500);
     },

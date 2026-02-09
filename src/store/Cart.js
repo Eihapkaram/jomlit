@@ -76,7 +76,7 @@ export const CartStore1 = defineStore("CartS", {
           await axios.put(
             `${this.domin}cart/item/${exist.id}/update`,
             { quantity: newQuantity },
-            { headers: { Authorization: `Bearer ${token}` } }
+            { headers: { Authorization: `Bearer ${token}` } },
           );
 
           exist.quantity = newQuantity; // تحديث محلي لحظي
@@ -94,7 +94,7 @@ export const CartStore1 = defineStore("CartS", {
             },
             {
               headers: { Authorization: `Bearer ${token}` },
-            }
+            },
           );
 
           // تحديث لحظي فوراً من السيرفر
@@ -154,7 +154,7 @@ export const CartStore1 = defineStore("CartS", {
           await axios.put(
             `${this.domin}cart/item/${exist.id}/update`,
             { quantity: newQuantity }, // هنا بقينا نبعت الكمية النهائية
-            { headers: { Authorization: `Bearer ${token}` } }
+            { headers: { Authorization: `Bearer ${token}` } },
           );
 
           exist.quantity = newQuantity; // تحديث الواجهة
@@ -169,7 +169,7 @@ export const CartStore1 = defineStore("CartS", {
       const token = localStorage.getItem("token");
 
       const exist = this.CartProduct2.find(
-        (p) => p.product_id === item.product.id
+        (p) => p.product_id === item.product.id,
       );
 
       if (exist) {
@@ -178,7 +178,7 @@ export const CartStore1 = defineStore("CartS", {
         await axios.post(
           `${this.domin}cart/item/${exist.id}/increase`,
           {},
-          { headers: { Authorization: `Bearer ${token}` } }
+          { headers: { Authorization: `Bearer ${token}` } },
         );
       }
     },
@@ -187,14 +187,14 @@ export const CartStore1 = defineStore("CartS", {
       const token = localStorage.getItem("token");
 
       const exist = this.CartProduct2.find(
-        (p) => p.product_id === item.product.id
+        (p) => p.product_id === item.product.id,
       );
       console.log(exist);
       if (exist) {
         await axios.post(
           `${this.domin}cart/item/${exist.id}/decrease`,
           {},
-          { headers: { Authorization: `Bearer ${token}` } }
+          { headers: { Authorization: `Bearer ${token}` } },
         );
       }
     },
