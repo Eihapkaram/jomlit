@@ -49,6 +49,11 @@ const UsersPage = () => import("@/components/dashborad/UsersPage.vue");
 const UpdateUser = () => import("@/components/dashborad/UpdateUser.vue");
 const ShowOrders = () => import("@/components/dashborad/ShowOrders.vue");
 const Settings = () => import("@/components/dashborad/Settings.vue");
+const userscarts = () => import("@/components/dashborad/UsersCarts.vue");
+const AdminSupplierOrders = () =>
+  import("@/components/dashborad/AdminSupplierOrders.vue");
+const mostAddedProducts = () =>
+  import("@/components/dashborad/MostAddedProducts.vue");
 const SuppleirPage = () => import("@/views/suppliers-page.vue");
 const AdminSendNotification = () =>
   import("@/components/dashborad/AdminSendNotification.vue");
@@ -144,6 +149,17 @@ const routes = [
         name: "catigoreUpdate",
         component: UpdateCategories,
       },
+      {
+        path: "mostaddedproducts",
+        name: "mostAddedProducts",
+        component: mostAddedProducts,
+      },
+      {
+        path: "adminsupplierorders",
+        name: "AdminSupplierOrders",
+        component: AdminSupplierOrders,
+      },
+      { path: "carts", name: "Carts", component: userscarts },
       { path: "pages", name: "pages", component: PagesCom },
       { path: "ordersuppler", name: "orderSuppler", component: SuppleirOrder },
       { path: "page/add", name: "addpage", component: AddPage },

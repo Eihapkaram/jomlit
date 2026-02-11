@@ -175,7 +175,7 @@ export default {
           "pushNotificationReceived",
           (notification) => {
             console.log("📨 إشعار جديد:", notification);
-          }
+          },
         );
       } catch (err) {
         console.error("❌ خطأ أثناء طلب الأذونات:", err);

@@ -45,6 +45,17 @@ export default {
         { titel: "طلبات سحب الارباح", url: "Requests", icon: "mdi-cart" },
         { titel: " اداره الموردين", url: "Suppleir", icon: "mdi-cart" },
         { titel: " عمل طلبية لمورد ", url: "orderSuppler", icon: "mdi-cart" },
+        { titel: "عربة المستخدمين ", url: "Carts", icon: "mdi-cart" },
+        {
+          titel: "المنتجات الاكثر اضافة ف العربة ",
+          url: "mostAddedProducts",
+          icon: "mdi-cart",
+        },
+         {
+          titel: " طلبيات التجهيز  ",
+          url: "AdminSupplierOrders",
+          icon: "mdi-cart",
+        },
       ],
     };
   },

@@ -1,21 +1,24 @@
 <template>
-  <div class="home">
+  <SuppluerHome v-if="userRole == 'supplier'" />
+  <div v-else class="home">
     <BannerSlider />
     <TopCatogery />
     <TopsSc />
     <NewProduct />
     <FooterSction />
   </div>
+  
 </template>
 
 <script>
 import { mystore } from "@/store";
-import { mapActions } from "pinia";
+import { mapActions,mapState } from "pinia";
 import FooterSction from "@/components/Home/FooterSction.vue";
 import BannerSlider from "@/components/Home/BannerSlider.vue";
 import NewProduct from "@/components/Home/NewProduct.vue";
 import TopCatogery from "@/components/Home/TopCatogery.vue";
 import TopsSc from "@/components/Home/TopsSc.vue";
+import SuppluerHome from "@/views/DashSupplier.vue";
 
 // @ is an alias to /src
 export default {
@@ -29,6 +32,7 @@ export default {
     BannerSlider,
 
     TopsSc,
+    SuppluerHome,
   },
   data() {
     return {
@@ -36,7 +40,7 @@ export default {
       SingleProduct: "",
     };
   },
-  computed: {},
+  computed: {...mapState(mystore,["userRole"])},
   methods: {
     ...mapActions(mystore, ["getall", "getcatigories"]),
     viwediloge(data) {

@@ -1,7 +1,5 @@
 <template>
-  <span v-if="getProductsBycategoryslug.length === 0"
-    >لم يتم العثور على منتجات</span
-  >
+  <span v-if="catigoryProducts.length === 0">لم يتم العثور على منتجات</span>
   <!-- البانر -->
   <v-container fluid>
     <banner width="100%" style="position: relative">
@@ -11,7 +9,7 @@
         style="box-sizing: border-box; width: cover"
         loading="lazy"
         alt="banner"
-        :src="domin + this.getProductsBycategoryslug.banner"
+        :src="domin + this.catigoryProducts.banner"
       />
     </banner>
   </v-container>
@@ -28,7 +26,7 @@
 
     <div class="grid">
       <div
-        v-for="pro in getProductsBycategoryslug"
+        v-for="pro in catigoryProducts.product"
         :key="pro.id"
         class="product-card"
       >
@@ -168,10 +166,10 @@ export default {
     return { load: false };
   },
   computed: {
-    ...mapState(mystore, ["searchrsult", "getProductsBycategoryslug", "domin"]),
+    ...mapState(mystore, ["searchrsult", "catigoryProducts", "domin"]),
   },
   methods: {
-    ...mapActions(mystore, ["getProductsByCategorySlug"]),
+    ...mapActions(mystore, ["getCatigoryProduct"]),
     ...mapActions(CartStore1, ["Additem", "Additem2", "GetCart"]),
     ...mapActions(ListsStore1, ["AdditemL", "updateL"]),
     async Add(pro) {
@@ -224,7 +222,7 @@ export default {
     window.scroll(0, 0);
     this.load = true;
     setTimeout(() => {
-      this.getProductsByCategorySlug(this.$route.params.catigory);
+      this.getCatigoryProduct(this.$route.params.catigory);
       this.load = false;
     }, 500);
   },
@@ -232,7 +230,7 @@ export default {
     $route() {
       this.load = true;
       setTimeout(() => {
-        this.getProductsByCategorySlug(this.$route.params.catigory);
+        this.getCatigoryProduct(this.$route.params.catigory);
         this.load = false;
       }, 500);
     },

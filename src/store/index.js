@@ -11,8 +11,12 @@ export const mystore = defineStore("mystore", {
     result: [],
     all: "",
     top: "",
+    adminSupplierorders: "",
     topsoldproducts: "",
     searchrsult: "",
+    userscarts: "",
+    topCustomer: "",
+    mostaddedproducts: "",
     SingleProduct: "",
     searchCatigoryby: "",
     page: "",
@@ -245,6 +249,81 @@ export const mystore = defineStore("mystore", {
         console.error(err.response?.data || err);
       }
     },
+    async usersCarts() {
+      const token = localStorage.getItem("token");
+      try {
+        const res = await axios.get(
+          `${this.domin}dashboard/cart/show/users/carts`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
+        this.userscarts = res.data.data.data;
+        console.log(this.userscarts);
+      } catch (err) {
+        console.error(err.response?.data || err);
+      }
+    },
+    async mostAddedProducts() {
+      const token = localStorage.getItem("token");
+      try {
+        const res = await axios.get(
+          `${this.domin}dashboard/cart/mostAddedProducts`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
+        this.mostaddedproducts = res.data;
+        console.log(res);
+      } catch (err) {
+        console.error(err.response?.data || err);
+      }
+    },
+    async topCustomersAddtoCart() {
+      const token = localStorage.getItem("token");
+      try {
+        const res = await axios.get(
+          `${this.domin}dashboard/cart/show/topCustomers`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
+        this.topCustomer = res.data;
+        console.log(res);
+      } catch (err) {
+        console.error(err.response?.data || err);
+      }
+    },
+    async adminsupplierorders() {
+      const token = localStorage.getItem("token");
+      try {
+        const res = await axios.get(
+          `${this.domin}dashboard/admin/supplier-orders`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
+        this.adminSupplierorders = res.data.orders;
+      } catch (err) {
+        console.error(err.response?.data || err);
+      }
+    },
+    async supplierordersstatus(id, status) {
+      const token = localStorage.getItem("token");
+
+      try {
+        await axios.put(
+          `${this.domin}dashboard/admin/supplier-orders/${id}/status`,
+          { status: status },
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
+      } catch (err) {
+        console.error(err.response?.data || err);
+      }
+    },
+
     /*async getNotyfication() {
       const token = localStorage.getItem("token");
       try {
