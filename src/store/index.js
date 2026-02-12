@@ -273,7 +273,7 @@ export const mystore = defineStore("mystore", {
             headers: { Authorization: `Bearer ${token}` },
           },
         );
-        this.mostaddedproducts = res.data;
+        this.mostaddedproducts = res.data.data;
         console.log(res);
       } catch (err) {
         console.error(err.response?.data || err);
