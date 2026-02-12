@@ -161,12 +161,7 @@
           </v-list-item>
         </v-list>
         <v-list-item id="link0">
-          <router-link v-if="userRole !== 'supplier'" :to="{ name: 'home' }"
-            >الرئيسية</router-link
-          >
-          <router-link
-            v-if="userRole == 'supplier'"
-            :to="{ name: 'supplierhome' }"
+          <router-link :to="{ name: 'home' }"
             >الرئيسية</router-link
           >
         </v-list-item>
@@ -764,16 +759,11 @@
           >
             <router-link
               class="nav-link"
-              v-if="userRole !== 'supplier'"
+            
               :to="{ name: 'home' }"
               >الرئيسية</router-link
             >
-            <router-link
-              class="nav-link"
-              v-if="userRole == 'supplier'"
-              :to="{ name: 'supplierhome' }"
-              >الرئيسية</router-link
-            >
+           
             <router-link
               v-for="cat in this.page.slice(0, 5)"
               :key="cat.titel"
