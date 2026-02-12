@@ -86,7 +86,7 @@ const routes = [
     component: CategoryPage,
   },
   {
-    path: "/",
+    path: "/supplierhome",
     name: "supplierhome",
     component: SupplierHome,
   },
