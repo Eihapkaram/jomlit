@@ -9,7 +9,7 @@
         class="elevation-1"
       >
         <template v-slot:item.count="{ item }">
-          {{ item.count }} Times
+         "addCount : " {{ item.total_added }} | "title : "{{ item.product.titel }} | "id" : {{ item.product.id }}
         </template>
       </v-data-table>
     </v-card>
