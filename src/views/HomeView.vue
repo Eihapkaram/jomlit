@@ -17,7 +17,7 @@ import BannerSlider from "@/components/Home/BannerSlider.vue";
 import NewProduct from "@/components/Home/NewProduct.vue";
 import TopCatogery from "@/components/Home/TopCatogery.vue";
 import TopsSc from "@/components/Home/TopsSc.vue";
-import SuppluerHome from "@/components/Home/DashSupplier.vue";
+import SuppluerHome from "@/views/DashSupplier.vue";
 
 // @ is an alias to /src
 export default {
