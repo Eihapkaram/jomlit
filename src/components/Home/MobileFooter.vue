@@ -8,22 +8,10 @@
   >
     <!-- 🏠 الصفحة الرئيسية -->
     <v-btn
-      v-if="store.userRole !== 'supplier'"
       variant="text"
       class="footer-btn"
       :class="{ active: $route.name === 'home' }"
       :to="{ name: 'home' }"
-    >
-      <v-icon size="26" color="darkgold">mdi-home-outline</v-icon>
-      <span>الرئيسية</span>
-    </v-btn>
-    <!-- 🏠للمورد   الصفحة الرئيسية -->
-    <v-btn
-      v-if="store.userRole === 'supplier'"
-      variant="text"
-      class="footer-btn"
-      :class="{ active: $route.name === 'supplierhome' }"
-      :to="{ name: 'supplierhome' }"
     >
       <v-icon size="26" color="darkgold">mdi-home-outline</v-icon>
       <span>الرئيسية</span>
