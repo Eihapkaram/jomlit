@@ -650,7 +650,7 @@
           </v-col>
 
           <!-- ✅ مربع البحث -->
-          <v-col cols="12" sm="5">
+          <v-col cols="12" sm="5" v-if="userRole !== 'supplier'">
             <v-form @submit.prevent="this.Search(this.searchvalue)">
               <v-text-field
                 v-model="this.searchvalue"
