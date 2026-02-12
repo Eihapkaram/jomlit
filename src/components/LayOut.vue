@@ -170,7 +170,8 @@
             >الرئيسية</router-link
           >
         </v-list-item>
-        <v-list-item
+        <v-list-item 
+          v-if="userRole !== 'supplier'"
           v-for="(cat, i) in page.slice(0, 5)"
           :key="i"
           id="link0"
