@@ -775,6 +775,7 @@
               >الرئيسية</router-link
             >
             <router-link
+              v-if="userRole !== 'supplier'"
               v-for="cat in this.page.slice(0, 5)"
               :key="cat.titel"
               :to="{ name: 'catigoryPage', params: { catigory: cat.slug } }"
