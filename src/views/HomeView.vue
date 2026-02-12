@@ -7,18 +7,17 @@
     <NewProduct />
     <FooterSction />
   </div>
-  
 </template>
 
 <script>
 import { mystore } from "@/store";
-import { mapActions,mapState } from "pinia";
+import { mapActions, mapState } from "pinia";
 import FooterSction from "@/components/Home/FooterSction.vue";
 import BannerSlider from "@/components/Home/BannerSlider.vue";
 import NewProduct from "@/components/Home/NewProduct.vue";
 import TopCatogery from "@/components/Home/TopCatogery.vue";
 import TopsSc from "@/components/Home/TopsSc.vue";
-import SuppluerHome from "@/views/DashSupplier.vue";
+import SuppluerHome from "@/components/Home/DashSupplier.vue";
 
 // @ is an alias to /src
 export default {
@@ -40,7 +39,7 @@ export default {
       SingleProduct: "",
     };
   },
-  computed: {...mapState(mystore,["userRole"])},
+  computed: { ...mapState(mystore, ["userRole"]) },
   methods: {
     ...mapActions(mystore, ["getall", "getcatigories"]),
     viwediloge(data) {
