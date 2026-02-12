@@ -3,6 +3,7 @@ import { mystore } from "@/store";
 
 // === Lazy-loaded Pages ===
 const HomeView = () => import("@/views/HomeView.vue");
+const SupplierHome = () => import("/src/views/DashSupplier.vue");
 const AboutView = () => import("@/views/AboutView.vue");
 const DetilseProduct = () => import("@/views/DetilseProduct.vue");
 const CatigoryProduct = () => import("@/views/CatigoryProduct.vue");
@@ -84,7 +85,11 @@ const routes = [
     name: "catigoryPage",
     component: CategoryPage,
   },
- 
+  {
+    path: "/supplierhome",
+    name: "supplierhome",
+    component: SupplierHome,
+  },
   { path: "/cartpage", name: "CartPage", component: CartPage },
   { path: "/listpage", name: "listpage", component: ListsPage },
   { path: "/checkpage", name: "checkpage", component: CheckOutpage },

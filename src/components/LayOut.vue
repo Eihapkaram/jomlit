@@ -161,7 +161,14 @@
           </v-list-item>
         </v-list>
         <v-list-item id="link0">
-          <router-link :to="{ name: 'home' }">الرئيسية</router-link>
+          <router-link v-if="userRole !== 'supplier'" :to="{ name: 'home' }"
+            >الرئيسية</router-link
+          >
+          <router-link
+            v-if="userRole == 'supplier'"
+            :to="{ name: 'supplierhome' }"
+            >الرئيسية</router-link
+          >
         </v-list-item>
         <v-list-item
           v-for="(cat, i) in page.slice(0, 5)"
@@ -755,10 +762,18 @@
             sm="8"
             class="d-flex flex-wrap justify-center justify-sm-start gap-3"
           >
-            <router-link class="nav-link" :to="{ name: 'home' }"
+            <router-link
+              class="nav-link"
+              v-if="userRole !== 'supplier'"
+              :to="{ name: 'home' }"
               >الرئيسية</router-link
             >
-
+            <router-link
+              class="nav-link"
+              v-if="userRole == 'supplier'"
+              :to="{ name: 'supplierhome' }"
+              >الرئيسية</router-link
+            >
             <router-link
               v-for="cat in this.page.slice(0, 5)"
               :key="cat.titel"
@@ -1026,7 +1041,7 @@ export default {
             headers: {
               Authorization: `Bearer ${this.token}`,
             },
-          },
+          }
         );
 
         this.logoutin();
