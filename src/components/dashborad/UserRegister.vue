@@ -408,7 +408,7 @@ export default {
         this.massage = "تم التسجيل بنجاح";
         this.snackbar = true;
         localStorage.setItem("token", res.data.token);
-        this.$router.push("/");
+        this.$router.push("/login");
       } catch (err) {
         console.error(err.response?.data || err);
         this.massage = "حدث خطاء ما حاول تسجيل من مكان تاني";
