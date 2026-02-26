@@ -99,7 +99,7 @@
 
           <!-- حسابي الشخصي -->
           <v-list-item
-            v-if="userRole == 'customer' || 'supplier'"
+            v-if="userRole != 'seller'"
             id="link0"
             hover
             @click="
@@ -366,7 +366,7 @@
 
         <!-- حسابي الشخصي -->
         <v-list-item
-          v-if="userRole == 'customer' || 'supplier'"
+          v-if="userRole != 'seller'"
           id="link0"
           hover
           @click="
