@@ -46,7 +46,7 @@ export const mystore = defineStore("mystore", {
     userorders: "",
     CartData: "",
     CartData2: "",
-    domin: "https://laravelapi-production-2492.up.railway.app/api/",
+    domin: "https://web-production-a3905.up.railway.app/api/",
   }),
 
   actions: {
