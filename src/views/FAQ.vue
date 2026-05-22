@@ -11,7 +11,7 @@
       </v-expansion-panel>
       <v-expansion-panel>
         <v-expansion-panel-title
-          >كيف اعمل ك مندوب في جُمـلـة الجُـمـلـة</v-expansion-panel-title
+          >كيف اعمل ك مندوب في تاجر البلد</v-expansion-panel-title
         >
         <v-expansion-panel-text>
           يمكنك التسجيل ك مندوب ثم تصفح و ترفع وجه و ضهر صوره الهواية الخاصه بك
@@ -25,8 +25,7 @@
       </v-expansion-panel>
       <v-expansion-panel>
         <v-expansion-panel-title
-          >كيف اضيف العملاء ك مندوب في جُمـلـة
-          الجُـمـلـة</v-expansion-panel-title
+          >كيف اضيف العملاء ك مندوب في تاجر البلد</v-expansion-panel-title
         >
         <v-expansion-panel-text>
           تبدا تضيف عملاء لو العميل جديد غير مسجل ف الموقع هنا تضيفه ك عميل جديد
@@ -42,8 +41,7 @@
       </v-expansion-panel>
       <v-expansion-panel>
         <v-expansion-panel-title
-          >كيف اسحب ارباحي ك مندوب في جُمـلـة
-          الجُـمـلـة</v-expansion-panel-title
+          >كيف اسحب ارباحي ك مندوب في تاجر البلد</v-expansion-panel-title
         >
         <v-expansion-panel-text>
           لسحب ارباحك و الاطلاع علي رصيدك من الارباح يتم ذلك من خلال حسابك

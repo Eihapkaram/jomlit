@@ -69,7 +69,7 @@ const routes = [
     path: "/",
     name: "home",
     component: HomeView,
-    meta: { title: "جُمـلـة الجُـمـلـة | منتجات الجملة في السوق المصري" },
+    meta: { title: "تاجر البلد | منتجات الجملة في السوق المصري" },
   },
   { path: "/products", name: "all", component: AboutView },
   { path: "/Profile", name: "Profile", component: Profile },

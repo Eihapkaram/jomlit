@@ -170,7 +170,7 @@
             >الرئيسية</router-link
           >
         </v-list-item>
-        <v-list-item 
+        <v-list-item
           v-if="userRole !== 'supplier'"
           v-for="(cat, i) in page.slice(0, 5)"
           :key="i"
@@ -196,7 +196,7 @@
           padding-top: 10px;
         "
       >
-        © جُمّله الجُمّله 2025 | سوق بيع الجملة في مصر 🇪🇬
+        © تاجر البلد 2026 | سوق بيع الجملة في مصر 🇪🇬
       </div>
     </v-navigation-drawer>
     <v-navigation-drawer
@@ -425,7 +425,7 @@
           padding-top: 10px;
         "
       >
-        © جُمّله الجُمّله 2025 | سوق بيع الجملة في مصر 🇪🇬
+        © تاجر البلد 2026 | سوق بيع الجملة في مصر 🇪🇬
       </div>
     </v-navigation-drawer>
 
@@ -646,7 +646,7 @@
               <v-icon size="36" color="#c79a00"
                 >mdi-package-variant-closed</v-icon
               >
-              <h2 class="text-lg font-bold text-darkgold">جُمّله الجُمّله</h2>
+              <h2 class="text-lg font-bold text-darkgold">تاجر البلد</h2>
             </div>
           </v-col>
 
