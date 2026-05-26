@@ -42,12 +42,16 @@
 
           <!-- Products -->
           <v-divider class="mb-3" />
+
           <div v-for="item in order.items" :key="item.id" class="product-row">
             <img :src="domin + item.product.img" />
+
             <div class="flex-1">
               <div>{{ item.product.titel }}</div>
+
               <small> {{ item.quantity }} × {{ item.supplier_price }} ج </small>
             </div>
+
             <strong>{{ item.total_price }} ج</strong>
           </div>
 
@@ -71,6 +75,7 @@
 
           <!-- Actions -->
           <div class="d-flex gap-2 flex-wrap">
+            <!-- قبول -->
             <v-btn
               v-if="order.status === 'sent'"
               color="success"
@@ -79,6 +84,7 @@
               قبول
             </v-btn>
 
+            <!-- رفض -->
             <v-btn
               v-if="order.status === 'sent'"
               color="error"
@@ -87,6 +93,15 @@
               رفض
             </v-btn>
 
+            <!-- تم تجهيز الطلب -->
+            <v-btn
+              v-if="order.status === 'preparing'"
+              color="primary"
+              @click="updateOrderStatus(order.id, 'ready')"
+            >
+              الطلب جاهز
+            </v-btn>
+            <!-- PDF -->
             <v-btn
               color="primary"
               variant="outlined"
@@ -103,17 +118,21 @@
     <v-dialog v-model="rejectDialog" max-width="500">
       <v-card>
         <v-card-title>سبب الرفض</v-card-title>
+
         <v-card-text>
           <v-textarea v-model="rejectReason" label="اكتب سبب الرفض" rows="3" />
         </v-card-text>
+
         <v-card-actions class="justify-end">
-          <v-btn variant="tonal" @click="rejectDialog = false">إلغاء</v-btn>
-          <v-btn color="error" @click="confirmReject">تأكيد الرفض</v-btn>
+          <v-btn variant="tonal" @click="rejectDialog = false"> إلغاء </v-btn>
+
+          <v-btn color="error" @click="confirmReject"> تأكيد الرفض </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
   </div>
 </template>
+
 <script>
 import axios from "axios";
 import { mystore } from "@/store";
@@ -126,6 +145,15 @@ export default {
       rejectDialog: false,
       rejectReason: "",
       selectedOrder: null,
+
+      alert: {
+        show: false,
+        type: "success",
+        message: "",
+      },
+
+      lastOrdersCount: 0,
+      intervalId: null,
     };
   },
 
@@ -140,64 +168,134 @@ export default {
           icon: "mdi-bell",
           color: "warning",
         },
+
         {
           title: "قيد التجهيز",
           value: this.orders.filter((o) => o.status === "preparing").length,
           icon: "mdi-progress-clock",
           color: "info",
         },
+
+        {
+          title: "جاهزة",
+          value: this.orders.filter((o) => o.status === "ready").length,
+          icon: "mdi-package-variant-closed-check",
+          color: "primary",
+        },
+
         {
           title: "مكتملة",
           value: this.orders.filter((o) => o.status === "received").length,
           icon: "mdi-check-circle",
           color: "success",
         },
-        {
-          title: "مرفوضة",
-          value: this.orders.filter((o) => o.status === "cancelled").length,
-          icon: "mdi-close-circle",
-          color: "error",
-        },
       ];
     },
   },
 
   methods: {
+    showAlert(type, message) {
+      this.alert = {
+        show: true,
+        type,
+        message,
+      };
+
+      setTimeout(() => {
+        this.alert.show = false;
+      }, 3000);
+    },
+
     async fetchOrders(showNotify = false) {
       const token = localStorage.getItem("token");
-      const res = await axios.get(`${this.domin}supplier/orders`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
 
-      const newOrders = res.data.filter((o) => o.status === "sent").length;
+      try {
+        const res = await axios.get(`${this.domin}supplier/orders`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-      // 🔔 تنبيه لو في طلبات جديدة
-      if (showNotify && newOrders > this.lastOrdersCount) {
-        this.showAlert("info", "📦 في طلبات جديدة");
+        const newOrders = res.data.filter((o) => o.status === "sent").length;
+
+        // 🔔 تنبيه الطلبات الجديدة
+        if (showNotify && newOrders > this.lastOrdersCount) {
+          this.showAlert("info", "📦 يوجد طلبات جديدة");
+        }
+
+        this.lastOrdersCount = newOrders;
+
+        this.orders = res.data;
+      } catch (err) {
+        console.log(err);
       }
+    },
 
-      this.lastOrdersCount = newOrders;
-      this.orders = res.data;
+    // ✅ تحديث حالة الطلب
+    async updateOrderStatus(orderId, status) {
+      const token = localStorage.getItem("token");
+
+      try {
+        await axios.post(
+          `${this.domin}supplier-orders/${orderId}/status`,
+          {
+            status: status,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        // تحديث مباشر بدون ريفرش
+        const order = this.orders.find((o) => o.id === orderId);
+
+        if (order) {
+          order.status = status;
+        }
+
+        if (status === "ready") {
+          this.showAlert("success", "تم تجهيز الطلب بنجاح");
+        }
+
+        if (status === "received") {
+          this.showAlert("success", "تم تسليم الطلب");
+        }
+      } catch (err) {
+        console.log(err);
+
+        this.showAlert("error", "فشل تحديث حالة الطلب");
+      }
     },
 
     async acceptOrder(orderId) {
       const token = localStorage.getItem("token");
+
       try {
         await axios.post(
           `${this.domin}supplier/orders/${orderId}/accept`,
           {},
-          { headers: { Authorization: `Bearer ${token}` } }
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
         );
 
-        // تحديث محلي مباشر
+        // تحديث مباشر
         const order = this.orders.find((o) => o.id === orderId);
-        if (order) order.status = "preparing";
+
+        if (order) {
+          order.status = "preparing";
+        }
 
         this.showAlert("success", "تم قبول الطلب");
       } catch {
         this.showAlert("error", "فشل قبول الطلب");
       }
     },
+
     openReject(order) {
       this.selectedOrder = order;
       this.rejectDialog = true;
@@ -210,14 +308,21 @@ export default {
       }
 
       const token = localStorage.getItem("token");
+
       try {
         await axios.post(
           `${this.domin}supplier/orders/${this.selectedOrder.id}/reject`,
-          { reason: this.rejectReason },
-          { headers: { Authorization: `Bearer ${token}` } }
+          {
+            reason: this.rejectReason,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
         );
 
-        // تحديث محلي مباشر
+        // تحديث مباشر
         this.selectedOrder.status = "cancelled";
         this.selectedOrder.supplier_reject_reason = this.rejectReason;
 
@@ -234,28 +339,41 @@ export default {
     async downloadPdf(orderId) {
       try {
         const token = localStorage.getItem("token");
+
         const response = await axios.get(
           `${this.domin}supplier-orders/${orderId}/invoice`,
           {
-            headers: { Authorization: `Bearer ${token}` },
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+
             responseType: "blob",
-          }
+          },
         );
 
         const url = window.URL.createObjectURL(new Blob([response.data]));
+
         const link = document.createElement("a");
+
         link.href = url;
+
         link.setAttribute("download", `order-${orderId}.pdf`);
+
         document.body.appendChild(link);
+
         link.click();
+
         link.remove();
       } catch {
         this.showAlert("error", "فشل تنزيل الفاتورة");
       }
     },
+
     auth() {
       return {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       };
     },
 
@@ -286,11 +404,13 @@ export default {
 
   mounted() {
     this.fetchOrders();
+
     // تحديث تلقائي كل 30 ثانية
     this.intervalId = setInterval(() => {
       this.fetchOrders(true);
     }, 30000);
   },
+
   beforeUnmount() {
     if (this.intervalId) {
       clearInterval(this.intervalId);
@@ -298,6 +418,7 @@ export default {
   },
 };
 </script>
+
 <style scoped>
 .supplier-dashboard {
   padding: 24px;
@@ -336,5 +457,9 @@ export default {
 
 .text-sm {
   font-size: 13px;
+}
+
+.gap-2 {
+  gap: 8px;
 }
 </style>

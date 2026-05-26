@@ -10,6 +10,9 @@ export const mystore = defineStore("mystore", {
   state: () => ({
     result: [],
     all: "",
+    Lmmitpro: "",
+    currentPage: 1,
+    lastPage: 1,
     top: "",
     adminSupplierorders: "",
     topsoldproducts: "",
@@ -70,7 +73,17 @@ export const mystore = defineStore("mystore", {
       const data = await res.json();
       this.all = data.products;
     },
+    async getall2(page = 1) {
+      const res = await fetch(`${this.domin}pro10?page=${page}`);
+      const data = await res.json();
 
+      this.Lmmitpro = data.products.data;
+
+      this.currentPage = data.products.current_page;
+      this.lastPage = data.products.last_page;
+
+      return data.products;
+    },
     async topall() {
       const res = await fetch(`${this.domin}products/most-ordered`);
       const data = await res.json();
