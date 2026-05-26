@@ -125,7 +125,7 @@ export default {
     async loadMore() {
       const next = this.page + 1;
 
-      if (next > this.catigoryProducts?.lastPage) return;
+      if (next > this.categoryPagination.lastPage) return;
 
       this.scrollLoading = true;
       this.page = next;
