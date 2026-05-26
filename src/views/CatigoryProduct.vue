@@ -4,6 +4,7 @@
   <!-- Banner -->
   <v-container fluid>
     <img
+      v-if="catigoryProducts?.banner"
       style="width: 100%; object-fit: cover"
       loading="lazy"
       :src="domin + catigoryProducts.banner"
@@ -88,9 +89,8 @@ export default {
   },
 
   computed: {
-    ...mapState(mystore, ["catigoryProducts", "domin"]),
+    ...mapState(mystore, ["catigoryProducts", "domin", "categoryPagination"]),
 
-    // 👇 أهم سطر: مصدر البيانات
     products() {
       return this.catigoryProducts?.product || [];
     },

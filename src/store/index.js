@@ -436,10 +436,10 @@ export const mystore = defineStore("mystore", {
 
         const data = await res.json();
 
-        console.log(data);
+        console.log("CATEGORY DATA:", data);
 
-        // ✅ تحقق من البيانات
-        if (!data || !data.category || !data.category.product) {
+        // ✅ لو مفيش بيانات
+        if (!data || !data.products) {
           this.catigoryProducts = {
             product: [],
             banner: "",
@@ -450,15 +450,21 @@ export const mystore = defineStore("mystore", {
           return;
         }
 
-        const productData = data.category.product;
+        // ✅ المنتجات جاية من products
+        const productData = data.products;
 
         const newProducts = productData.data || [];
 
-        // ✅ أول صفحة
+        // ✅ أول تحميل
         if (page === 1) {
           this.catigoryProducts = {
-            ...data.category,
+            id: data.category?.id,
+            name: data.category?.name,
+            description: data.category?.description,
+            banner: data.category?.banner,
+
             product: newProducts,
+
             currentPage: productData.current_page,
             lastPage: productData.last_page,
           };
@@ -477,12 +483,19 @@ export const mystore = defineStore("mystore", {
           this.catigoryProducts.lastPage = productData.last_page;
         }
 
-        // ✅ pagination state
+        // ✅ تحديث pagination
         this.categoryPagination.currentPage = productData.current_page;
 
         this.categoryPagination.lastPage = productData.last_page;
       } catch (err) {
         console.error("CATEGORY ERROR:", err);
+
+        this.catigoryProducts = {
+          product: [],
+          banner: "",
+          currentPage: 1,
+          lastPage: 1,
+        };
       } finally {
         this.categoryPagination.loading = false;
       }
