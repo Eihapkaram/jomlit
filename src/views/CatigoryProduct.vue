@@ -163,7 +163,7 @@ import { CartStore1 } from "@/store/Cart";
 export default {
   inject: ["Emitter"],
   data() {
-    return { load: false };
+    return { load: false, loading: false, scrollHandler: null };
   },
   computed: {
     ...mapState(mystore, ["searchrsult", "catigoryProducts", "domin"]),
@@ -177,6 +177,31 @@ export default {
         await this.Additem2(pro);
         await this.Additem(pro);
         await this.GetCart();
+      }
+    },
+    async loadMoreProducts() {
+      if (this.loading) return;
+
+      // وقف لما يخلص كل الصفحات
+      if (this.currentPage >= this.lastPage) return;
+
+      const scrollTop =
+        window.pageYOffset || document.documentElement.scrollTop;
+
+      const windowHeight = window.innerHeight;
+
+      const fullHeight = document.documentElement.offsetHeight;
+
+      // قبل نهاية الصفحة بـ 300px
+      if (scrollTop + windowHeight + 300 >= fullHeight) {
+        this.loading = true;
+
+        await this.getCatigoryProduct(
+          this.$route.params.catigory,
+          this.currentPage + 1,
+        );
+
+        this.loading = false;
       }
     },
     funvaled(pro) {
@@ -220,19 +245,29 @@ export default {
   },
   async mounted() {
     window.scroll(0, 0);
+
     this.load = true;
-    setTimeout(() => {
-      this.getCatigoryProduct(this.$route.params.catigory);
-      this.load = false;
-    }, 500);
+
+    await this.getCatigoryProduct(this.$route.params.catigory, 1);
+
+    this.load = false;
+
+    this.scrollHandler = this.loadMoreProducts;
+
+    window.addEventListener("scroll", this.scrollHandler);
+  },
+  beforeUnmount() {
+    window.removeEventListener("scroll", this.scrollHandler);
   },
   watch: {
-    $route() {
+    async $route() {
+      window.scroll(0, 0);
+
       this.load = true;
-      setTimeout(() => {
-        this.getCatigoryProduct(this.$route.params.catigory);
-        this.load = false;
-      }, 500);
+
+      await this.getCatigoryProduct(this.$route.params.catigory, 1);
+
+      this.load = false;
     },
   },
 };
