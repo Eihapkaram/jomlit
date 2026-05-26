@@ -377,21 +377,32 @@ export const mystore = defineStore("mystore", {
         console.error(err.response?.data || err);
       }
     },*/
-    async getNotyfication() {
+    async getNotyfication(page = 1) {
       const token = localStorage.getItem("token");
+
       try {
-        const res = await axios.get(`${this.domin}notifications`, {
-          headers: { Authorization: `Bearer ${token}` },
+        const res = await axios.get(`${this.domin}notifications?page=${page}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         });
 
+        // بيانات الـ pagination
+        this.currentPage = res.data.notifications.current_page;
+        this.lastPage = res.data.notifications.last_page;
+
+        // الإشعارات
+        const notifications = res.data.notifications.data;
+
         // مقارنة الإشعارات الجديدة باللي موجودة قبل كده
-        const newNotifications = res.data.notifications.filter(
+        const newNotifications = notifications.filter(
           (n) => !this.lastNotificationId || n.id > this.lastNotificationId,
         );
 
         if (newNotifications.length) {
-          // تشغيل صوت عند وجود إشعار جديد في المتصفح
+          // تشغيل صوت عند وجود إشعار جديد
           const audio = new Audio("/sounds/mp.mp3");
+
           audio.play().catch(() => {});
 
           // تحديث آخر Notification ID
@@ -402,11 +413,13 @@ export const mystore = defineStore("mystore", {
             await LocalNotifications.schedule({
               notifications: [
                 {
-                  title: n.title,
-                  body: n.message,
-                  id: n.id,
-                  sound: "mp.mp3", // لو حطيت الصوت في android/app/src/main/res/raw
-                  smallIcon: "ic_stat_icon", // أيقونة صغيرة في navbar
+                  title: n.data?.title || "إشعار جديد",
+                  body: n.data?.message || "",
+                  id: Number(n.id),
+
+                  sound: "mp.mp3",
+
+                  smallIcon: "ic_stat_icon",
                 },
               ],
             });
@@ -414,7 +427,8 @@ export const mystore = defineStore("mystore", {
         }
 
         // تحديث البيانات
-        this.Notyf = res.data.notifications;
+        this.Notyf = notifications;
+
         this.NotyfCount = res.data.unread_count;
       } catch (err) {
         console.error(err.response?.data || err);
