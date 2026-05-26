@@ -42,7 +42,7 @@
               {{ order.status }}
             </v-chip>
           </div>
-          {{ console.log(order) }}
+
           ربح المندوب : {{ order.seller_profit }}
           <!-- ✅ إدخال الربح -->
           <v-text-field
@@ -97,10 +97,21 @@
           <div class="text-body-2 mb-2">
             <strong>id العميل :</strong> {{ order.userorder.id }}
           </div>
+
+          <a :href="domin + order.store_banner" target="_blank">store_banner</a>
+
           <div class="text-body-2 mb-2">
-            <strong> الموقع :</strong>
-            {{ order.userorder.latitude }}
-            {{ order.userorder.longitude }}
+            <v-btn
+              v-if="order.userorder.latitude && order.userorder.longitude"
+              color="success"
+              size="small"
+              class="mt-2"
+              :href="`https://www.google.com/maps?q=${order.userorder.latitude},${order.userorder.longitude}`"
+              target="_blank"
+            >
+              <v-icon left>mdi-map-marker</v-icon>
+              عرض الموقع لصاحب الطلب
+            </v-btn>
           </div>
 
           <v-divider class="my-2"></v-divider>
@@ -256,9 +267,17 @@
             <strong>طريقه الدفع :</strong> {{ order.payment_method }}
           </div>
           <div class="text-body-2 mb-2">
-            <strong> الموقع :</strong>
-            {{ order.userorder.latitude }}
-            {{ order.userorder.longitude }}
+            <v-btn
+              v-if="order.userorder.latitude && order.userorder.longitude"
+              color="success"
+              size="small"
+              class="mt-2"
+              :href="`https://www.google.com/maps?q=${order.userorder.latitude},${order.userorder.longitude}`"
+              target="_blank"
+            >
+              <v-icon left>mdi-map-marker</v-icon>
+              عرض الموقع لصاحب الطلب
+            </v-btn>
           </div>
 
           <v-divider class="my-2"></v-divider>
@@ -384,7 +403,7 @@ export default {
             headers: {
               Authorization: `Bearer ${token}`,
             },
-          }
+          },
         );
         console.log("تم تحديث الحالة:", res.data);
         this.ordersShow();
@@ -406,7 +425,7 @@ export default {
             headers: {
               Authorization: `Bearer ${token}`,
             },
-          }
+          },
         );
         console.log("تم اضافه الربح:", res.data);
         this.ordersShow();
@@ -500,7 +519,7 @@ export default {
               Authorization: `Bearer ${token}`,
             },
             responseType: "blob", // 🔹 مهم جداً لتحميل الملف بشكل صحيح
-          }
+          },
         );
 
         // إنشاء رابط التحميل
@@ -533,7 +552,7 @@ export default {
 
         // إنشاء رابط للتحميل
         const fileURL = window.URL.createObjectURL(
-          new Blob([res.data], { type: "application/pdf" })
+          new Blob([res.data], { type: "application/pdf" }),
         );
         const link = document.createElement("a");
         link.href = fileURL;
@@ -549,7 +568,7 @@ export default {
       } catch (err) {
         console.error(
           "❌ خطأ أثناء تحميل الفاتورة:",
-          err.response?.data || err
+          err.response?.data || err,
         );
       }
     },

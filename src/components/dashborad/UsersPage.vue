@@ -29,7 +29,11 @@
           <v-row align="center">
             <v-col cols="4">
               <v-avatar :size="80" :tile="false">
-                <img :src="domin + pro.img" alt="User Avatar" />
+                <img
+                  style="object-fit: cover"
+                  :src="domin + pro.img"
+                  alt="User Avatar"
+                />
               </v-avatar>
             </v-col>
             <v-col cols="8">
@@ -38,6 +42,26 @@
               </v-card-title>
               <v-card-subtitle>ID: {{ pro.id }}</v-card-subtitle>
               <v-card-subtitle>Role: {{ pro.role }}</v-card-subtitle>
+              <v-card-subtitle>phone: {{ pro.phone }}</v-card-subtitle>
+
+              <v-btn
+                v-if="pro.latitude && pro.longitude"
+                color="success"
+                size="small"
+                class="mt-2"
+                :href="`https://www.google.com/maps?q=${pro.latitude},${pro.longitude}`"
+                target="_blank"
+              >
+                <v-icon left>mdi-map-marker</v-icon>
+                عرض الموقع
+              </v-btn>
+              <div v-if="pro.role == 'seller'">
+                <a :href="domin + pro.front_id_image" target="_blank"
+                  >front-id</a
+                >
+                <br />
+                <a :href="domin + pro.back_id_image" target="_blank">back-id</a>
+              </div>
             </v-col>
           </v-row>
 
@@ -98,7 +122,7 @@ export default {
           `${this.domin}dashboard/user/delete/${id}`,
           {
             headers: { Authorization: `Bearer ${token}` },
-          }
+          },
         );
         console.log("تم حذف المستخدم:", res.data);
       } catch (err) {
@@ -128,7 +152,7 @@ export default {
               Authorization: `Bearer ${token}`,
               "Content-Type": "multipart/form-data",
             },
-          }
+          },
         );
         console.log("✅ تم رفع الملف بنجاح:", res.data);
         alert(res.data.message || "تم رفع الملف بنجاح ✅");
