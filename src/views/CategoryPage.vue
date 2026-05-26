@@ -1,184 +1,216 @@
 <template>
+  <span v-if="!catigoryProducts?.product?.length && !load">
+    لم يتم العثور على منتجات
+  </span>
+
+  <!-- البانر -->
+  <v-container fluid v-if="catigoryProducts?.banner">
+    <banner width="100%" style="position: relative">
+      <img
+        height="fit-content"
+        width="100%"
+        style="box-sizing: border-box; width: cover"
+        loading="lazy"
+        alt="banner"
+        :src="domin + catigoryProducts.banner"
+      />
+    </banner>
+  </v-container>
+
   <v-lazy
     :min-height="200"
     :options="{ threshold: 0.5 }"
     transition="fade-transition"
   >
-    <v-row id="con" class="d-flex flex-row">
-      <v-progress-linear color="blue" indeterminate v-if="load" />
+    <!-- loader أول تحميل -->
+    <v-progress-linear
+      color="blue"
+      indeterminate
+      v-if="load"
+    ></v-progress-linear>
 
-      <!-- البانر -->
-      <v-container fluid>
-        <banner width="100%">
-          <img
-            height="fit-content"
-            width="100%"
-            style="box-sizing: border-box; width: cover"
-            :src="domin + searchCatigoryby[0].categories[0].banner"
-          />
-        </banner>
-      </v-container>
-
-      <!-- الأقسام: صورة + اسم فقط -->
-      <v-container fluid id="topcato">
-        <h2 class="section-title">الاصناف {{ this.$route.params.idp }}</h2>
-        <div class="categories-grid">
+    <div class="grid">
+      <div
+        v-for="pro in catigoryProducts?.product || []"
+        :key="pro.id"
+        class="product-card"
+      >
+        <div id="parantimg1" class="img-wrapper">
           <div
-            class="category-item"
-            v-for="pro in getCategoriesBypageslug"
-            :key="pro.id"
+            v-if="pro.stock < 1"
+            style="
+              position: absolute;
+              top: 100px;
+              left: 0;
+              align-content: center;
+              z-index: 5;
+              width: 100%;
+              height: fit-content;
+              background-color: lightcoral;
+            "
           >
-            <v-card
-              height="200px"
-              style="
-                display: flex;
-                align-content: center;
-                justify-content: center;
-              "
+            <h3 style="color: red; font-size: bold; position: relative">
+              المنتج غير متوفر حاليا
+            </h3>
+          </div>
+
+          <v-btn
+            @click="Emitter.emit('dilog', pro)"
+            rounded
+            variant="outlined"
+            id="quick"
+            ripple
+          >
+            نظره سريعه
+          </v-btn>
+
+          <img loading="lazy" :src="domin + pro.img" :alt="pro.title" />
+
+          <v-row
+            style="
+              position: absolute;
+              gap: auto;
+              align-content: center;
+              justify-content: center;
+            "
+          >
+            <button
+              class="love-btn"
+              :class="{ active: pro.loved }"
+              @click="toggleLove(pro)"
+            >
+              <v-icon>
+                {{ pro.loved ? "mdi-heart" : "mdi-heart-outline" }}
+              </v-icon>
+            </button>
+
+            <span v-if="pro.discount > 0" id="availbel" class="d-flex">
+              %{{ pro.discount }}
+            </span>
+          </v-row>
+        </div>
+
+        <div class="info">
+          <h3 class="title">{{ pro.titel }}</h3>
+
+          <div class="price-row">
+            <span v-if="pro.discount != 0">بدلا من </span>
+
+            <span
+              v-if="pro.discount != 0"
+              style="text-decoration: line-through"
+            >
+              {{
+                Math.floor(pro.price) +
+                (pro.discount / 100) * Math.floor(pro.price)
+              }}
+              ج.م
+            </span>
+
+            <span v-if="pro.discount != 0">بسعر :</span>
+
+            <span class="price"> {{ Math.floor(pro.price) }} ج.م </span>
+          </div>
+
+          <p class="brand">العلامة التجارية: {{ pro.brand }}</p>
+
+          <v-rating
+            v-model="pro.votes"
+            readonly
+            :length="5"
+            :size="18"
+            active-color="#d4a017"
+          />
+
+          <div class="desc">
+            {{ pro.description }}
+          </div>
+
+          <div class="details">
+            🧃 <strong>{{ pro.Counttype }}:</strong>
+            تحتوي على
+            <strong>{{ pro.inCount }}</strong>
+            {{ pro.inCounttype }}
+
+            <br />
+
+            💰 <strong>سعر {{ pro.inCounttype }}:</strong>
+
+            <span>
+              {{ Math.floor(pro.price / pro.inCount) }}
+            </span>
+
+            ج.م
+          </div>
+
+          <div>
+            <v-btn
+              class="cart-btn"
               @click="
-                this.$router.push({
-                  name: 'catigory',
-                  params: { catigory: pro.name },
+                $router.push({
+                  name: 'derilse',
+                  params: { idparam: pro.id },
                 })
               "
-              class="category-item"
             >
-              <img
-                @click="
-                  this.$router.push({
-                    name: 'catigory',
-                    params: { catigory: pro.name },
-                  })
-                "
-                :src="domin + pro.img"
-                :alt="pro.name"
-                loading="lazy"
-              />
+              تفاصيل
+            </v-btn>
 
-              <h2 class="category-name" style="margin-block: 5px">
-                {{ pro.name }}
-              </h2>
-            </v-card>
-          </div>
-          <div id="catgoryitem">
-            <v-card
-              id="catgoryitem"
-              class="d-flex flex-column align-center justify-center"
-              elevation="4"
-              @click="toggleShowMore"
-              style="cursor: pointer; height: 200px; width: 160px"
-            >
-              <v-icon size="60" color="#c79a00">
-                {{
-                  showAll
-                    ? "mdi-minus-circle-outline"
-                    : "mdi-plus-circle-outline"
-                }}
-              </v-icon>
-              <span
-                style="
-                  margin-top: 10px;
-                  font-weight: 600;
-                  color: #c79a00;
-                  font-size: 1.1rem;
-                "
-              >
-                {{ showAll ? "عرض أقل" : "عرض المزيد" }}
-              </span>
-            </v-card>
+            <v-btn class="cart-btn" @click="(pro.quantity = 1), funvaled(pro)">
+              🛒 أضف للسلة
+            </v-btn>
           </div>
         </div>
-      </v-container>
+      </div>
 
-      <!-- منتجات مميزة -->
-      <v-container fluid>
-        <div class="categories-slider">
-          <v-container>
-            <h2 class="section-title">الاكثر مبيعا</h2>
-
-            <swiper
-              :centeredSlides="false"
-              :autoplay="{
-                delay: 2500,
-                disableOnInteraction: false,
-              }"
-              :slides-per-view="3"
-              :spaceBetween="20"
-              :modules="modules"
-              :loop="true"
-              :breakpoints="{
-                320: { slidesPerView: 1, spaceBetween: 10 },
-                768: { slidesPerView: 2, spaceBetween: 15 },
-                1024: { slidesPerView: 3, spaceBetween: 20 },
-              }"
-            >
-              <swiper-slide v-for="(item, i) in topsoldproducts" :key="i">
-                <div class="category-card">
-                  <div class="card-horizontal">
-                    <div class="image-wrapper">
-                      <img
-                        :src="domin + item.img"
-                        :alt="item.name"
-                        loading="lazy"
-                      />
-                    </div>
-                    <div class="info">
-                      <span class="category-name">{{ item.titel }}</span>
-                      <span class="category-price"
-                        >{{ Math.floor(item.price) }} ج.م</span
-                      >
-                      <v-btn
-                        class="category-price"
-                        @click="(item.quantity = 1), funvaled(item)"
-                        >اضف للعربة</v-btn
-                      >
-                    </div>
-                  </div>
-                </div>
-              </swiper-slide>
-            </swiper>
-          </v-container>
-        </div>
+      <!-- infinite scroll loading -->
+      <v-container fluid v-if="loadingMore">
+        <v-row justify="center">
+          <v-col cols="12" md="4">
+            <v-skeleton-loader
+              class="mx-auto border"
+              type="image, article, button, button"
+            ></v-skeleton-loader>
+          </v-col>
+        </v-row>
       </v-container>
-    </v-row>
+    </div>
   </v-lazy>
 </template>
 
 <script>
-import { Swiper, SwiperSlide } from "swiper/vue";
-import { Autoplay } from "swiper/modules";
+import { mapActions, mapState } from "pinia";
 import { mystore } from "@/store";
 import { ListsStore1 } from "@/store/Lists";
 import { CartStore1 } from "@/store/Cart";
-import { mapActions, mapState } from "pinia";
-import "swiper/css";
-import "swiper/css/scrollbar";
 
 export default {
   inject: ["Emitter"],
-  components: { Swiper, SwiperSlide },
+
   data() {
     return {
       load: false,
-      showAll: false,
+      loadingMore: false,
     };
   },
-  methods: {
-    ...mapActions(mystore, [
-      "searchCatigorybyname",
-      "getCatigoryProduct1",
-      "getCategoriesByPageSlug",
-      "topsold",
+
+  computed: {
+    ...mapState(mystore, [
+      "searchrsult",
+      "catigoryProducts",
+      "domin",
+      "currentPage",
+      "lastPage",
     ]),
+  },
+
+  methods: {
+    ...mapActions(mystore, ["getCatigoryProduct"]),
+
     ...mapActions(CartStore1, ["Additem", "Additem2", "GetCart"]),
 
     ...mapActions(ListsStore1, ["AdditemL", "updateL"]),
-    toggleShowMore() {
-      this.showAll = !this.showAll;
-    },
-    goToCategory(id) {
-      this.$router.push({ name: "derilse", params: { idparam: id } });
-    },
+
     async Add(pro) {
       if (localStorage.getItem("token")) {
         await this.Additem2(pro);
@@ -186,74 +218,116 @@ export default {
         await this.GetCart();
       }
     },
+
     funvaled(pro) {
       if (localStorage.getItem("token")) {
         this.funvaled2(pro);
+
         if (pro.stock >= 1) {
           this.Add(pro);
+
           let textem2 = "تم اضافه المنتج ف العربة";
           let act = true;
+
           let op = { textem2, act };
+
           this.Emitter.emit("cart", op);
         }
       } else {
-        let textem = "عشان تضيف منتج  ف العربة لازم تسجل دخول الأول";
+        let textem = "عشان تضيف منتج ف العربة لازم تسجل دخول الأول";
+
         this.Emitter.emit("sin", textem);
       }
     },
+
     funvaled2(pro) {
       if (pro.stock < 1) {
         let textem1 = "المنتج غير متوفر حاليا";
+
         this.Emitter.emit("sin", textem1);
       }
     },
-  },
-  setup() {
-    return { modules: [Autoplay] };
-  },
-  computed: {
-    ...mapState(mystore, [
-      "searchCatigoryby",
-      "catigoryProducts1",
-      "domin",
-      "topsoldproducts",
-      "getCategoriesBypageslug",
-    ]),
-    displayedCategories() {
-      return this.showAll
-        ? this.searchCatigoryby[0].categories
-        : this.searchCatigoryby[0].categories.slice(0, 6);
+
+    toggleLove(pro) {
+      pro.loved = !pro.loved;
+
+      if (pro.loved && localStorage.getItem("token")) {
+        pro.quantity = 1;
+
+        this.AdditemL(pro);
+      }
+    },
+
+    async loadMore() {
+      // منع تكرار الطلبات
+      if (this.loadingMore) return;
+
+      // لو وصلنا لآخر صفحة
+      if (this.currentPage >= this.lastPage) return;
+
+      const scrollTop =
+        window.pageYOffset || document.documentElement.scrollTop;
+
+      const windowHeight = window.innerHeight;
+
+      const fullHeight = document.documentElement.scrollHeight;
+
+      // تحميل قبل نهاية الصفحة بـ 250px
+      if (scrollTop + windowHeight >= fullHeight - 250) {
+        this.loadingMore = true;
+
+        try {
+          await this.getCatigoryProduct(
+            this.$route.params.catigory,
+            this.currentPage + 1,
+          );
+        } catch (err) {
+          console.log(err);
+        } finally {
+          this.loadingMore = false;
+        }
+      }
+    },
+
+    async firstLoad() {
+      this.load = true;
+
+      try {
+        await this.getCatigoryProduct(this.$route.params.catigory, 1);
+      } catch (err) {
+        console.log(err);
+      } finally {
+        this.load = false;
+      }
     },
   },
+
   async mounted() {
-    this.topsold(this.$route.params.catigory);
-    await this.getCategoriesByPageSlug(this.$route.params.catigory);
-    await this.searchCatigorybyname(this.$route.params.catigory);
-    window.scroll(0, 0);
-    this.load = true;
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
 
-    setTimeout(() => {
-      this.load = false;
-    }, 500);
+    await this.firstLoad();
 
-    document.title = `${this.$route.params.catigory} | جملة الجملة`;
-
-    let desc = document.querySelector('meta[name="description"]');
-    if (desc)
-      desc.setAttribute(
-        "content",
-        `منتجات قسم ${this.$route.params.catigory} بالجملة من السوق المصري.`,
-      );
+    // تحسين الأداء
+    window.addEventListener("scroll", this.loadMore, {
+      passive: true,
+    });
   },
+
+  beforeUnmount() {
+    window.removeEventListener("scroll", this.loadMore);
+  },
+
   watch: {
-    $route() {
-      this.load = true;
-      setTimeout(() => {
-        this.searchCatigorybyname(this.$route.params.catigory);
-        this.topsold(this.$route.params.catigory);
-        this.getCategoriesByPageSlug(this.$route.params.catigory);
-        this.load = false;
-      }, 500);
+    async $route() {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+
+      await this.firstLoad();
     },
   },
 };
