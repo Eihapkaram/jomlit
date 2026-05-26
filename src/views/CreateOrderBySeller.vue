@@ -130,8 +130,8 @@
               prepend-icon="mdi-image"
               required
               :show-size="true"
-              @change="onFileChange"
               :clearable="true"
+              @update:modelValue="onFileChange"
             />
           </v-col>
 
@@ -321,31 +321,47 @@ export default {
     ]),
     ...mapActions(mystore, ["Cart"]),
     onFileChange(file) {
-      if (!file || (Array.isArray(file) && file.length === 0)) {
+      console.log("banner =>", file);
+
+      if (!file) {
         this.previewImage = "";
         this.form.store_banner = null;
         return;
       }
-      const actualFile = Array.isArray(file) ? file[0] : file;
-      if (!(actualFile instanceof Blob)) {
-        this.previewImage = "";
-        this.form.store_banner = null;
-        return;
+
+      // لو Array
+      if (Array.isArray(file)) {
+        this.form.store_banner = file[0];
+      } else {
+        this.form.store_banner = file;
       }
-      this.form.store_banner = actualFile;
-      const reader = new FileReader();
-      reader.onload = (e) => (this.previewImage = e.target.result);
-      reader.readAsDataURL(actualFile);
+
+      // preview
+      this.previewImage = URL.createObjectURL(this.form.store_banner);
+
+      console.log("final file =>", this.form.store_banner);
     },
     async order2() {
       const token = localStorage.getItem("token");
+
       const formData = new FormData();
-      Object.entries(this.form).forEach(([key, value]) => {
-        formData.append(key, value || "");
-      });
+
+      formData.append("user_id", this.form.user_id);
+      formData.append("city", this.form.city);
+      formData.append("governorate", this.form.governorate);
+      formData.append("street", this.form.street);
+      formData.append("phone", this.form.phone);
+      formData.append("store_name", this.form.store_name || "");
+      formData.append("payment_method", this.form.payment_method || "cod");
+
+      // ✅ الصورة
+      if (this.form.store_banner instanceof File) {
+        formData.append("store_banner", this.form.store_banner);
+      }
+
       formData.append(
         "total_price",
-        this.total.reduce((a, b) => a + b, 0)
+        this.total.reduce((a, b) => a + b, 0),
       );
 
       try {
@@ -355,18 +371,25 @@ export default {
             formData,
             {
               headers: {
-                "Content-Type": "multipart/form-data",
                 Authorization: `Bearer ${token}`,
+                "Content-Type": "multipart/form-data",
               },
-            }
+            },
           );
+
+          console.log(res.data);
+
+          this.createdOrder = res.data.order;
+
           this.CartDelAll();
           this.delitemAll();
+
           this.showAlert("success", "تم إنشاء الطلب بنجاح ✅");
         }
       } catch (err) {
-        console.error(err.response?.data || err);
-        alert("تأكد من  ادخال البيانات  بشكل صحيح");
+        console.log(err.response?.data || err);
+
+        this.showAlert("error", "تأكد من إدخال البيانات بشكل صحيح");
       }
     },
     fun() {
