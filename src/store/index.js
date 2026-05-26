@@ -387,47 +387,31 @@ export const mystore = defineStore("mystore", {
           },
         });
 
-        // بيانات الـ pagination
         this.currentPage = res.data.notifications.current_page;
         this.lastPage = res.data.notifications.last_page;
 
-        // الإشعارات
         const notifications = res.data.notifications.data;
 
-        // مقارنة الإشعارات الجديدة باللي موجودة قبل كده
+        // تشغيل صوت للإشعارات الجديدة
         const newNotifications = notifications.filter(
           (n) => !this.lastNotificationId || n.id > this.lastNotificationId,
         );
 
         if (newNotifications.length) {
-          // تشغيل صوت عند وجود إشعار جديد
           const audio = new Audio("/sounds/mp.mp3");
 
           audio.play().catch(() => {});
 
-          // تحديث آخر Notification ID
           this.lastNotificationId = newNotifications[0].id;
-
-          // اظهار الإشعارات في Android Nav/Status Bar
-          newNotifications.forEach(async (n) => {
-            await LocalNotifications.schedule({
-              notifications: [
-                {
-                  title: n.data?.title || "إشعار جديد",
-                  body: n.data?.message || "",
-                  id: Number(n.id),
-
-                  sound: "mp.mp3",
-
-                  smallIcon: "ic_stat_icon",
-                },
-              ],
-            });
-          });
         }
 
-        // تحديث البيانات
-        this.Notyf = notifications;
+        // page الأولى يستبدل
+        if (page === 1) {
+          this.Notyf = notifications;
+        } else {
+          // الصفحات التالية يضيف
+          this.Notyf = [...this.Notyf, ...notifications];
+        }
 
         this.NotyfCount = res.data.unread_count;
       } catch (err) {

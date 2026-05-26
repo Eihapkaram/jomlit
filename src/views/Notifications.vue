@@ -16,95 +16,78 @@
           </v-btn>
         </div>
 
-        <!-- Virtual Scroll -->
-        <v-card class="rounded-xl pa-2">
-          <v-virtual-scroll
-            :items="Notyf"
-            :height="700"
-            :item-height="180"
-            @scroll.passive="handleScroll"
-          >
-            <template v-slot:default="{ item: note, index: i }">
-              <v-card
-                :key="note.id || i"
-                class="mb-4 rounded-xl shadow-sm border"
-                variant="outlined"
+        <!-- الإشعارات -->
+        <v-card
+          v-for="(note, i) in Notyf"
+          :key="note.id || i"
+          class="mb-4 rounded-xl shadow-sm border"
+          variant="outlined"
+        >
+          <v-card-title class="d-flex align-center justify-space-between">
+            <div class="d-flex align-center gap-3">
+              <v-icon :color="note.read_at ? 'grey' : '#c79a00'" size="26">
+                mdi-bell-outline
+              </v-icon>
+
+              <span
+                :class="{ 'text-grey': note.read_at }"
+                class="font-weight-bold"
               >
-                <v-card-title class="d-flex align-center justify-space-between">
-                  <div class="d-flex align-center gap-3">
-                    <v-icon
-                      :color="note.read_at ? 'grey' : '#c79a00'"
-                      size="26"
-                    >
-                      mdi-bell-outline
-                    </v-icon>
+                {{ note.data?.title || "إشعار جديد" }}
+              </span>
+            </div>
 
-                    <span
-                      :class="{ 'text-grey': note.read_at }"
-                      class="font-weight-bold"
-                    >
-                      {{ note.data?.title || "إشعار جديد" }}
-                    </span>
-                  </div>
+            <small class="text-grey">
+              {{ formatDate(note.created_at) }}
+            </small>
+          </v-card-title>
 
-                  <small class="text-grey">
-                    {{ formatDate(note.created_at) }}
-                  </small>
-                </v-card-title>
+          <!-- الرسالة -->
+          <v-card-text class="text-body-2 text-grey-darken-2">
+            {{
+              expandedNotifications[note.id]
+                ? note.data?.message
+                : (note.data?.message || "").substring(0, 60) + "..."
+            }}
+          </v-card-text>
 
-                <!-- نص الإشعار -->
-                <v-card-text class="text-body-2 text-grey-darken-2">
-                  {{
-                    expandedNotifications[note.id]
-                      ? note.data?.message
-                      : truncate(note.data?.message)
-                  }}
-                </v-card-text>
+          <v-divider />
 
-                <v-divider></v-divider>
+          <v-card-actions class="justify-space-between">
+            <v-btn color="#c79a00" variant="text" @click="toggleDetails(note)">
+              {{
+                expandedNotifications[note.id]
+                  ? "إخفاء التفاصيل"
+                  : "عرض التفاصيل"
+              }}
+            </v-btn>
 
-                <v-card-actions class="justify-space-between">
-                  <v-btn
-                    color="#c79a00"
-                    variant="text"
-                    @click="toggleDetails(note)"
-                  >
-                    {{
-                      expandedNotifications[note.id]
-                        ? "إخفاء التفاصيل"
-                        : "عرض التفاصيل"
-                    }}
-                  </v-btn>
-
-                  <v-btn
-                    color="red"
-                    variant="text"
-                    @click="deleteNotification(note.id)"
-                  >
-                    حذف
-                  </v-btn>
-                </v-card-actions>
-              </v-card>
-            </template>
-          </v-virtual-scroll>
-
-          <!-- loading -->
-          <div v-if="loading" class="d-flex justify-center align-center py-4">
-            <v-progress-circular
-              indeterminate
-              color="#c79a00"
-            ></v-progress-circular>
-          </div>
+            <v-btn
+              color="red"
+              variant="text"
+              @click="deleteNotification(note.id)"
+            >
+              حذف
+            </v-btn>
+          </v-card-actions>
         </v-card>
 
-        <!-- لا توجد إشعارات -->
+        <!-- loading -->
+        <div v-if="loading" class="text-center py-4">
+          <v-progress-circular indeterminate color="#c79a00" />
+        </div>
+
+        <!-- observer -->
+        <div ref="loadMoreTrigger" style="height: 20px"></div>
+
+        <!-- لا يوجد -->
         <v-alert
-          v-if="Notyf.length === 0"
+          v-if="!loading && Notyf.length === 0"
           type="info"
           variant="tonal"
           class="mt-6 text-center"
         >
-          لا توجد إشعارات حالياً.
+          لا توجد إشعارات حالياً
         </v-alert>
       </v-col>
     </v-row>
@@ -126,72 +109,59 @@ export default {
 
       page: 1,
       loading: false,
-      finished: false,
+      hasMore: true,
+
+      observer: null,
     };
   },
 
   computed: {
-    ...mapState(mystore, ["domin", "Notyf", "NotyfCount"]),
+    ...mapState(mystore, [
+      "domin",
+      "Notyf",
+      "NotyfCount",
+      "currentPage",
+      "lastPage",
+    ]),
   },
 
   methods: {
     ...mapActions(mystore, ["getNotyfication"]),
 
-    truncate(text) {
-      if (!text) return "";
-      return text.length > 60 ? text.substring(0, 60) + "..." : text;
-    },
-
-    async loadMore() {
-      if (this.loading || this.finished) return;
+    async loadNotifications() {
+      if (this.loading || !this.hasMore) return;
 
       this.loading = true;
 
-      const token = localStorage.getItem("token");
-
       try {
-        const res = await axios.get(
-          `${this.domin}notifications?page=${this.page}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          },
-        );
+        await this.getNotyfication(this.page);
 
-        const newNotifications = res.data.notifications.data;
-
-        if (this.page === 1) {
-          this.Notyf = newNotifications;
-        } else {
-          this.Notyf.push(...newNotifications);
-        }
-
-        this.NotyfCount = res.data.unread_count;
-
-        if (
-          !res.data.notifications.next_page_url ||
-          newNotifications.length === 0
-        ) {
-          this.finished = true;
+        if (this.currentPage >= this.lastPage) {
+          this.hasMore = false;
         } else {
           this.page++;
         }
       } catch (err) {
-        console.error(err.response?.data || err);
+        console.error(err);
       }
 
       this.loading = false;
     },
 
-    async handleScroll(e) {
-      const element = e.target;
+    setupInfiniteScroll() {
+      this.observer = new IntersectionObserver(
+        async (entries) => {
+          if (entries[0].isIntersecting) {
+            await this.loadNotifications();
+          }
+        },
+        {
+          threshold: 1,
+        },
+      );
 
-      const bottom =
-        element.scrollHeight - element.scrollTop <= element.clientHeight + 100;
-
-      if (bottom) {
-        await this.loadMore();
+      if (this.$refs.loadMoreTrigger) {
+        this.observer.observe(this.$refs.loadMoreTrigger);
       }
     },
 
@@ -241,7 +211,7 @@ export default {
           },
         });
 
-        this.Notyf = this.Notyf.filter((item) => item.id !== id);
+        this.Notyf = this.Notyf.filter((n) => n.id !== id);
       } catch (err) {
         console.error(err.response?.data || err);
       }
@@ -261,15 +231,15 @@ export default {
           },
         );
 
-        this.Notyf = this.Notyf.map((n) => ({
-          ...n,
-          read_at: new Date(),
-        }));
+        this.Notyf.forEach((n) => {
+          n.read_at = true;
+        });
       } catch (err) {
         console.error(err.response?.data || err);
       }
     },
 
+    // تحديث تلقائي
     startAutoRefresh() {
       if (this.refreshTimer) {
         clearInterval(this.refreshTimer);
@@ -277,9 +247,9 @@ export default {
 
       this.refreshTimer = setInterval(async () => {
         this.page = 1;
-        this.finished = false;
+        this.hasMore = true;
 
-        await this.loadMore();
+        await this.getNotyfication(1);
       }, 15000);
     },
   },
@@ -287,7 +257,9 @@ export default {
   async mounted() {
     window.scroll(0, 0);
 
-    await this.loadMore();
+    await this.loadNotifications();
+
+    this.setupInfiniteScroll();
 
     this.startAutoRefresh();
   },
@@ -295,6 +267,10 @@ export default {
   beforeUnmount() {
     if (this.refreshTimer) {
       clearInterval(this.refreshTimer);
+    }
+
+    if (this.observer) {
+      this.observer.disconnect();
     }
   },
 };
@@ -311,9 +287,5 @@ export default {
 
 .gap-3 {
   gap: 12px;
-}
-
-.border {
-  border: 1px solid #eee;
 }
 </style>
