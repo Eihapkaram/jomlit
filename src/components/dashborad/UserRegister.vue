@@ -310,12 +310,32 @@ export default {
     ...mapState(mystore, ["domin", "token"]),
   },
   methods: {
-    onFileChange(file) {
-      this.front_id_image = Array.isArray(file) ? file[0] : file;
+    onFileChange(event) {
+      if (Array.isArray(event)) {
+        this.front_id_image = event[0];
+      } else if (event instanceof File) {
+        this.front_id_image = event;
+      } else if (event?.target?.files?.length) {
+        this.front_id_image = event.target.files[0];
+      } else {
+        this.front_id_image = null;
+      }
+
+      console.log(this.front_id_image);
     },
 
-    onFileChange2(file) {
-      this.back_id_image = Array.isArray(file) ? file[0] : file;
+    onFileChange2(event) {
+      if (Array.isArray(event)) {
+        this.back_id_image = event[0];
+      } else if (event instanceof File) {
+        this.back_id_image = event;
+      } else if (event?.target?.files?.length) {
+        this.back_id_image = event.target.files[0];
+      } else {
+        this.back_id_image = null;
+      }
+
+      console.log(this.back_id_image);
     },
     requestLocation() {
       if (navigator.geolocation) {
@@ -352,14 +372,23 @@ export default {
       formData.append("role", this.role);
       if (this.role === "seller") {
         formData.append("wallet_number", this.wallet_number);
-
-        if (this.front_id_image instanceof File) {
-          formData.append("front_id_image", this.front_id_image);
+        if (this.front_id_image) {
+          formData.append(
+            "front_id_image",
+            this.front_id_image,
+            this.front_id_image.name,
+          );
         }
 
-        if (this.back_id_image instanceof File) {
-          formData.append("back_id_image", this.back_id_image);
+        if (this.back_id_image) {
+          formData.append(
+            "back_id_image",
+            this.back_id_image,
+            this.back_id_image.name,
+          );
         }
+        console.log(this.front_id_image);
+        console.log(this.back_id_image);
       }
       try {
         const res = await axios.post(`${this.domin}register`, formData, {
@@ -399,13 +428,23 @@ export default {
       if (this.role === "seller") {
         formData.append("wallet_number", this.wallet_number);
 
-        if (this.front_id_image instanceof File) {
-          formData.append("front_id_image", this.front_id_image);
+        if (this.front_id_image) {
+          formData.append(
+            "front_id_image",
+            this.front_id_image,
+            this.front_id_image.name,
+          );
         }
 
-        if (this.back_id_image instanceof File) {
-          formData.append("back_id_image", this.back_id_image);
+        if (this.back_id_image) {
+          formData.append(
+            "back_id_image",
+            this.back_id_image,
+            this.back_id_image.name,
+          );
         }
+        console.log(this.front_id_image);
+        console.log(this.back_id_image);
       }
       try {
         const res = await axios.post(`${this.domin}register-phone`, formData, {
