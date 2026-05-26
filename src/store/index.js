@@ -419,10 +419,32 @@ export const mystore = defineStore("mystore", {
       }
     },
 
-    async getCatigoryProduct(catigory) {
-      const res = await fetch(`${this.domin}search/category?q=${catigory}`);
-      const data = await res.json();
-      this.catigoryProducts = data.category;
+    async getCatigoryProduct(catigory, page = 1) {
+      try {
+        const res = await fetch(
+          `${this.domin}search/category?q=${catigory}&page=${page}`,
+        );
+
+        const data = await res.json();
+
+        if (data.success) {
+          // أول صفحة
+          if (page === 1) {
+            this.catigoryProducts = {
+              ...data.category,
+              product: data.category.product.data,
+            };
+          } else {
+            // append products
+            this.catigoryProducts.product.push(...data.category.product.data);
+          }
+
+          this.currentPage = data.category.product.current_page;
+          this.lastPage = data.category.product.last_page;
+        }
+      } catch (err) {
+        console.error(err);
+      }
     },
 
     async getCatigoryProduct1(catigory) {
