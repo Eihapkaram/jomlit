@@ -66,7 +66,7 @@
         <v-select
           v-model="role"
           :items="[
-            { text: 'تاجر', value: 'customer' },
+            { text: 'صاحب محل', value: 'customer' },
             { text: 'مندوب', value: 'seller' },
             { text: 'مورد', value: 'supplier' },
           ]"
@@ -310,11 +310,12 @@ export default {
     ...mapState(mystore, ["domin", "token"]),
   },
   methods: {
-    onFileChange(files) {
-      this.front_id_image = files && files.length ? files[0] : null;
+    onFileChange(file) {
+      this.front_id_image = Array.isArray(file) ? file[0] : file;
     },
-    onFileChange2(files) {
-      this.back_id_image = files && files.length ? files[0] : null;
+
+    onFileChange2(file) {
+      this.back_id_image = Array.isArray(file) ? file[0] : file;
     },
     requestLocation() {
       if (navigator.geolocation) {
@@ -325,7 +326,7 @@ export default {
             this.showLocationAlert = false;
           },
           () => (this.showLocationAlert = true),
-          { enableHighAccuracy: true, timeout: 10000 }
+          { enableHighAccuracy: true, timeout: 10000 },
         );
       } else {
         alert("المتصفح لا يدعم خدمة الموقع الجغرافي");
@@ -351,10 +352,14 @@ export default {
       formData.append("role", this.role);
       if (this.role === "seller") {
         formData.append("wallet_number", this.wallet_number);
-        if (this.front_id_image)
+
+        if (this.front_id_image instanceof File) {
           formData.append("front_id_image", this.front_id_image);
-        if (this.back_id_image)
+        }
+
+        if (this.back_id_image instanceof File) {
           formData.append("back_id_image", this.back_id_image);
+        }
       }
       try {
         const res = await axios.post(`${this.domin}register`, formData, {
@@ -393,10 +398,14 @@ export default {
       formData.append("role", this.role);
       if (this.role === "seller") {
         formData.append("wallet_number", this.wallet_number);
-        if (this.front_id_image)
+
+        if (this.front_id_image instanceof File) {
           formData.append("front_id_image", this.front_id_image);
-        if (this.back_id_image)
+        }
+
+        if (this.back_id_image instanceof File) {
           formData.append("back_id_image", this.back_id_image);
+        }
       }
       try {
         const res = await axios.post(`${this.domin}register-phone`, formData, {

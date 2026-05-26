@@ -5,8 +5,8 @@
       <v-expansion-panel>
         <v-expansion-panel-title>كيف أشتري بالجملة؟</v-expansion-panel-title>
         <v-expansion-panel-text>
-          يمكنك التسجيل كمشتري ثم تصفح المنتجات المتوفرة بالجملة وإضافتها لعربة
-          التسوق.
+          يمكنك التسجيل كصاحب محل ثم تصفح المنتجات المتوفرة بالجملة وإضافتها
+          لعربة التسوق.
         </v-expansion-panel-text>
       </v-expansion-panel>
       <v-expansion-panel>
