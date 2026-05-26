@@ -13,6 +13,11 @@ export const mystore = defineStore("mystore", {
     Lmmitpro: "",
     currentPage: 1,
     lastPage: 1,
+    categoryPagination: {
+      currentPage: 1,
+      lastPage: 1,
+      loading: false,
+    },
     top: "",
     adminSupplierorders: "",
     topsoldproducts: "",
@@ -420,6 +425,13 @@ export const mystore = defineStore("mystore", {
     },
 
     async getCatigoryProduct(catigory, page = 1) {
+      if (this.categoryPagination.loading) return;
+
+      // منع تجاوز آخر صفحة
+      if (page > this.categoryPagination.lastPage && page !== 1) return;
+
+      this.categoryPagination.loading = true;
+
       try {
         const res = await fetch(
           `${this.domin}search/category?q=${catigory}&page=${page}`,
@@ -427,23 +439,35 @@ export const mystore = defineStore("mystore", {
 
         const data = await res.json();
 
-        if (data.success) {
-          // أول صفحة
-          if (page === 1) {
-            this.catigoryProducts = {
-              ...data.category,
-              product: data.category.product.data,
-            };
-          } else {
-            // append products
-            this.catigoryProducts.product.push(...data.category.product.data);
-          }
+        if (!data.success) return;
 
-          this.currentPage = data.category.product.current_page;
-          this.lastPage = data.category.product.last_page;
+        const newProducts = data.category.product.data;
+
+        // أول صفحة = reset
+        if (page === 1) {
+          this.catigoryProducts = {
+            ...data.category,
+            product: newProducts,
+          };
+        } else {
+          // منع التكرار (filter by id)
+          const existingIds = new Set(
+            this.catigoryProducts.product.map((p) => p.id),
+          );
+
+          const filtered = newProducts.filter((p) => !existingIds.has(p.id));
+
+          this.catigoryProducts.product.push(...filtered);
         }
+
+        // sync pagination
+        this.categoryPagination.currentPage =
+          data.category.product.current_page;
+        this.categoryPagination.lastPage = data.category.product.last_page;
       } catch (err) {
         console.error(err);
+      } finally {
+        this.categoryPagination.loading = false;
       }
     },
 
