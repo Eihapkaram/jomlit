@@ -1,81 +1,161 @@
 <template>
-  <span v-if="!products?.length"> لم يتم العثور على منتجات </span>
-
-  <!-- Banner -->
+  <span v-if="products.length === 0"> لم يتم العثور على منتجات </span>
+  <!-- البانر -->
   <v-container fluid>
-    <img
-      v-if="catigoryProducts?.banner"
-      style="width: 100%; object-fit: cover"
-      loading="lazy"
-      :src="domin + catigoryProducts.banner"
-    />
+    <banner width="100%" style="position: relative">
+      <img
+        v-if="bannerImage"
+        height="fit-content"
+        width="100%"
+        style="box-sizing: border-box; width: cover"
+        loading="lazy"
+        alt="banner"
+        :src="bannerImage"
+      />
+    </banner>
   </v-container>
-
-  <!-- Loading -->
-  <v-progress-linear v-if="load" indeterminate color="blue" />
-
-  <!-- 🔥 Virtual Scroll -->
-  <v-virtual-scroll
-    :items="products"
-    :item-height="420"
-    height="80vh"
-    class="virtual-wrapper"
-    @scroll="onScroll"
+  <v-lazy
+    :min-height="200"
+    :options="{ threshold: 0.5 }"
+    transition="fade-transition"
   >
-    <template #default="{ item }">
-      <div class="product-card">
-        <!-- Image -->
-        <div class="img-wrapper">
-          <img :src="domin + item.img" />
+    <v-progress-linear
+      color="blue"
+      indeterminate
+      v-if="load"
+    ></v-progress-linear>
 
-          <button
-            class="love-btn"
-            :class="{ active: item.loved }"
-            @click="toggleLove(item)"
+    <div class="grid">
+      <div v-for="pro in products" :key="pro.id" class="product-card">
+        <div id="parantimg1" class="img-wrapper">
+          <div
+            v-if="pro.stock < 1"
+            style="
+              position: absolute;
+              top: 100px;
+              left: 0;
+              align-content: center;
+              z-index: 5;
+              width: 100%;
+              height: fit-content;
+              background-color: lightcoral;
+            "
           >
-            <v-icon>
-              {{ item.loved ? "mdi-heart" : "mdi-heart-outline" }}
-            </v-icon>
-          </button>
-
-          <span v-if="item.discount > 0" id="availbel">
-            %{{ item.discount }}
-          </span>
+            <h3 style="color: red; font-size: bold; position: relative">
+              المنتج غير متوفر حاليا
+            </h3>
+          </div>
+          <v-btn
+            @click="this.Emitter.emit('dilog', pro)"
+            rounded
+            variant="outliened"
+            id="quick"
+            ripple
+            >نظره سريعه</v-btn
+          >
+          <img loading="lazy" :src="domin + pro.img" :alt="pro.title" />
+          <v-row
+            style="
+              position: absolute;
+              gap: auto;
+              align-content: center;
+              justify-content: center;
+            "
+          >
+            <button
+              class="love-btn"
+              :class="{ active: pro.loved }"
+              @click="toggleLove(pro)"
+            >
+              <v-icon>{{
+                pro.loved ? "mdi-heart" : "mdi-heart-outline"
+              }}</v-icon>
+              <v-spacer></v-spacer>
+            </button>
+            <span v-if="pro.discount > 0" id="availbel" class="d-flex"
+              >%{{ pro.discount }}</span
+            >
+          </v-row>
         </div>
 
-        <!-- Info -->
         <div class="info">
-          <h3 class="title">{{ item.titel }}</h3>
-
+          <h3 class="title">{{ pro.titel }}</h3>
           <div class="price-row">
-            <span class="price"> {{ Math.floor(item.price) }} ج.م </span>
+            <span v-if="pro.discount != 0">بدلا من </span>
+            <span
+              v-if="pro.discount != 0"
+              style="text-decoration: line-through"
+              class=""
+              >{{
+                Math.floor(pro.price) +
+                (pro.discount / 100) * Math.floor(pro.price)
+              }}
+              ج.م</span
+            >
+
+            <span v-if="pro.discount != 0">بسعر :</span
+            ><span class="price">{{ Math.floor(pro.price) }} ج.م</span>
           </div>
+          <p class="brand">العلامة التجارية: {{ pro.brand }}</p>
 
-          <p class="brand">{{ item.brand }}</p>
+          <v-rating
+            v-model="pro.votes"
+            readonly
+            :length="5"
+            :size="18"
+            active-color="#d4a017"
+          />
 
+          <!-- ✅ الوصف القابل للتمرير -->
           <div class="desc">
-            {{ item.description }}
+            {{ pro.description }}
           </div>
 
-          <v-btn class="cart-btn" @click="addToCart(item)">
-            🛒 أضف للسلة
-          </v-btn>
+          <div class="details">
+            🧃 <strong> {{ pro.Counttype }}:</strong> تحتوي على
+            <strong>{{ pro.inCount }}</strong> {{ pro.inCounttype }}
+            <br />
+            💰 <strong>سعر {{ pro.inCounttype }}:</strong>
+            <span>{{ Math.floor(pro.price / pro.inCount) }}</span> ج.م
+          </div>
+
+          <div>
+            <v-btn
+              class="cart-btn"
+              @click="
+                $router.push({ name: 'derilse', params: { idparam: pro.id } })
+              "
+            >
+              تفاصيل
+            </v-btn>
+            <v-btn class="cart-btn" @click="(pro.quantity = 1), funvaled(pro)">
+              🛒 أضف للسلة
+            </v-btn>
+          </div>
         </div>
       </div>
-    </template>
-  </v-virtual-scroll>
-
-  <!-- Loader عند تحميل صفحات جديدة -->
-  <div v-if="scrollLoading" class="text-center pa-4">
-    <v-progress-circular indeterminate />
-  </div>
+      <v-container fluid v-if="loading">
+        <v-row>
+          <v-col cols="12">
+            <v-row>
+              <v-col cols="12">
+                <v-skeleton-loader
+                  class="mx-auto border"
+                  id="cardskl"
+                  style=""
+                  type="image, article, button, button"
+                ></v-skeleton-loader>
+              </v-col> </v-row></v-col></v-row
+      ></v-container>
+    </div>
+  </v-lazy>
 </template>
 
 <script>
-import { mapState, mapActions } from "pinia";
+import { mapActions, mapState } from "pinia";
 import { mystore } from "@/store";
-import { CartStore1 } from "@/store/Cart";
 import { ListsStore1 } from "@/store/Lists";
+import { CartStore1 } from "@/store/Cart";
 
 export default {
   inject: ["Emitter"],
@@ -83,74 +163,87 @@ export default {
   data() {
     return {
       load: false,
-      scrollLoading: false,
-      page: 1,
+      loading: false,
     };
   },
 
   computed: {
-    ...mapState(mystore, ["catigoryProducts", "domin", "categoryPagination"]),
+    ...mapState(mystore, ["searchrsult", "catigoryProducts", "domin"]),
 
+    // ✅ التعامل مع البيانات سواء Array أو Object
     products() {
-      return this.catigoryProducts?.product || [];
+      if (Array.isArray(this.catigoryProducts)) {
+        return this.catigoryProducts;
+      }
+
+      if (
+        this.catigoryProducts &&
+        Array.isArray(this.catigoryProducts.product)
+      ) {
+        return this.catigoryProducts.product;
+      }
+
+      return [];
+    },
+
+    bannerImage() {
+      if (this.catigoryProducts && this.catigoryProducts.banner) {
+        return this.domin + this.catigoryProducts.banner;
+      }
+
+      return "";
     },
   },
 
   methods: {
     ...mapActions(mystore, ["getCatigoryProduct"]),
     ...mapActions(CartStore1, ["Additem", "Additem2", "GetCart"]),
-    ...mapActions(ListsStore1, ["AdditemL"]),
+    ...mapActions(ListsStore1, ["AdditemL", "updateL"]),
 
-    async init() {
-      this.load = true;
-      this.page = 1;
-
-      await this.getCatigoryProduct(this.$route.params.catigory, 1);
-
-      this.load = false;
-    },
-
-    // 🔥 Load more عند الوصول للنهاية
-    async onScroll(e) {
-      const el = e.target;
-
-      if (
-        el.scrollTop + el.clientHeight >= el.scrollHeight - 200 &&
-        !this.scrollLoading
-      ) {
-        await this.loadMore();
+    async Add(pro) {
+      if (localStorage.getItem("token")) {
+        await this.Additem2(pro);
+        await this.Additem(pro);
+        await this.GetCart();
       }
     },
 
-    async loadMore() {
-      const next = this.page + 1;
+    funvaled(pro) {
+      if (localStorage.getItem("token")) {
+        this.funvaled2(pro);
 
-      if (next > this.categoryPagination.lastPage) return;
+        if (pro.stock >= 1) {
+          this.Add(pro);
 
-      this.scrollLoading = true;
-      this.page = next;
+          let textem2 = "تم اضافه المنتج ف العربة";
+          let act = true;
+          let op = { textem2, act };
 
-      await this.getCatigoryProduct(this.$route.params.catigory, next);
-
-      this.scrollLoading = false;
+          this.Emitter.emit("cart", op);
+        }
+      } else {
+        let textem = "عشان تضيف منتج ف العربة لازم تسجل دخول الأول";
+        this.Emitter.emit("sin", textem);
+      }
     },
 
-    async addToCart(pro) {
-      if (!localStorage.getItem("token")) {
-        this.Emitter.emit("sin", "سجل دخول أولاً");
-        return;
+    funvaled2(pro) {
+      if (pro.stock < 1) {
+        let textem1 = "المنتج غير متوفر حاليا";
+        this.Emitter.emit("sin", textem1);
       }
+    },
 
-      pro.quantity = 1;
+    count(url, price) {
+      this.count = price / url;
+    },
 
-      await this.Additem2(pro);
-      await this.Additem(pro);
-      await this.GetCart();
-
-      this.Emitter.emit("cart", {
-        textem2: "تم إضافة المنتج",
-        act: true,
-      });
+    check() {
+      if (this.products.length <= 30) {
+        this.loading = true;
+      } else {
+        this.loading = false;
+      }
     },
 
     toggleLove(pro) {
@@ -161,16 +254,28 @@ export default {
         this.AdditemL(pro);
       }
     },
+
+    async getProducts() {
+      try {
+        this.load = true;
+
+        await this.getCatigoryProduct(this.$route.params.catigory);
+      } catch (error) {
+        console.log(error);
+      } finally {
+        this.load = false;
+      }
+    },
   },
 
-  mounted() {
-    window.scrollTo(0, 0);
-    this.init();
+  async mounted() {
+    window.scroll(0, 0);
+    await this.getProducts();
   },
 
   watch: {
-    $route() {
-      this.init();
+    async $route() {
+      await this.getProducts();
     },
   },
 };
