@@ -17,8 +17,13 @@
         </div>
 
         <!-- Virtual Scroll -->
-        <v-card class="pa-2 rounded-xl">
-          <v-virtual-scroll :items="Notyf" :height="650" :item-height="170">
+        <v-card class="rounded-xl pa-2">
+          <v-virtual-scroll
+            :items="Notyf"
+            :height="700"
+            :item-height="180"
+            @scroll.passive="handleScroll"
+          >
             <template v-slot:default="{ item: note, index: i }">
               <v-card
                 :key="note.id || i"
@@ -47,7 +52,7 @@
                   </small>
                 </v-card-title>
 
-                <!-- الرسالة -->
+                <!-- نص الإشعار -->
                 <v-card-text class="text-body-2 text-grey-darken-2">
                   {{
                     expandedNotifications[note.id]
@@ -82,20 +87,17 @@
               </v-card>
             </template>
           </v-virtual-scroll>
+
+          <!-- loading -->
+          <div v-if="loading" class="d-flex justify-center align-center py-4">
+            <v-progress-circular
+              indeterminate
+              color="#c79a00"
+            ></v-progress-circular>
+          </div>
         </v-card>
 
-        <!-- Pagination -->
-        <div class="d-flex justify-center mt-6">
-          <v-pagination
-            v-model="currentPage"
-            :length="lastPage"
-            @update:modelValue="changePage"
-            rounded="circle"
-            color="#c79a00"
-          />
-        </div>
-
-        <!-- لا يوجد -->
+        <!-- لا توجد إشعارات -->
         <v-alert
           v-if="Notyf.length === 0"
           type="info"
@@ -121,17 +123,15 @@ export default {
     return {
       expandedNotifications: {},
       refreshTimer: null,
+
+      page: 1,
+      loading: false,
+      finished: false,
     };
   },
 
   computed: {
-    ...mapState(mystore, [
-      "domin",
-      "Notyf",
-      "NotyfCount",
-      "currentPage",
-      "lastPage",
-    ]),
+    ...mapState(mystore, ["domin", "Notyf", "NotyfCount"]),
   },
 
   methods: {
@@ -142,8 +142,57 @@ export default {
       return text.length > 60 ? text.substring(0, 60) + "..." : text;
     },
 
-    async changePage(page) {
-      await this.getNotyfication(page);
+    async loadMore() {
+      if (this.loading || this.finished) return;
+
+      this.loading = true;
+
+      const token = localStorage.getItem("token");
+
+      try {
+        const res = await axios.get(
+          `${this.domin}notifications?page=${this.page}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        const newNotifications = res.data.notifications.data;
+
+        if (this.page === 1) {
+          this.Notyf = newNotifications;
+        } else {
+          this.Notyf.push(...newNotifications);
+        }
+
+        this.NotyfCount = res.data.unread_count;
+
+        if (
+          !res.data.notifications.next_page_url ||
+          newNotifications.length === 0
+        ) {
+          this.finished = true;
+        } else {
+          this.page++;
+        }
+      } catch (err) {
+        console.error(err.response?.data || err);
+      }
+
+      this.loading = false;
+    },
+
+    async handleScroll(e) {
+      const element = e.target;
+
+      const bottom =
+        element.scrollHeight - element.scrollTop <= element.clientHeight + 100;
+
+      if (bottom) {
+        await this.loadMore();
+      }
     },
 
     toggleDetails(note) {
@@ -175,8 +224,6 @@ export default {
             },
           },
         );
-
-        await this.getNotyfication(this.currentPage);
       } catch (err) {
         console.error(err.response?.data || err);
       }
@@ -194,7 +241,7 @@ export default {
           },
         });
 
-        await this.getNotyfication(this.currentPage);
+        this.Notyf = this.Notyf.filter((item) => item.id !== id);
       } catch (err) {
         console.error(err.response?.data || err);
       }
@@ -214,20 +261,25 @@ export default {
           },
         );
 
-        await this.getNotyfication(this.currentPage);
+        this.Notyf = this.Notyf.map((n) => ({
+          ...n,
+          read_at: new Date(),
+        }));
       } catch (err) {
         console.error(err.response?.data || err);
       }
     },
 
-    // تحديث تلقائي
     startAutoRefresh() {
       if (this.refreshTimer) {
         clearInterval(this.refreshTimer);
       }
 
       this.refreshTimer = setInterval(async () => {
-        await this.getNotyfication(this.currentPage);
+        this.page = 1;
+        this.finished = false;
+
+        await this.loadMore();
       }, 15000);
     },
   },
@@ -235,7 +287,7 @@ export default {
   async mounted() {
     window.scroll(0, 0);
 
-    await this.getNotyfication(1);
+    await this.loadMore();
 
     this.startAutoRefresh();
   },
