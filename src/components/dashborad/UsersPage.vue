@@ -30,7 +30,7 @@
             <v-col cols="4">
               <v-avatar :size="80" :tile="false">
                 <img
-                  style="object-fit: cover"
+                  style="object-fit: contain; box-sizing: content-box"
                   :src="domin + pro.img"
                   alt="User Avatar"
                 />

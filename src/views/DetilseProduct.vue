@@ -372,6 +372,10 @@ export default {
       progrssbtn: false,
       reveiwe: "",
       tab: null,
+
+      reviewPage: 1,
+      loadingReviews: false,
+      reviewPagination: null,
     };
   },
   setup() {
@@ -440,13 +444,14 @@ export default {
         const res = await axios.post(
           `${this.domin}add/reviweForProdict/${id}`,
           { comment: this.reveiwe },
-          { headers: { Authorization: `Bearer ${token}` } }
+          { headers: { Authorization: `Bearer ${token}` } },
         );
         console.log("تم إضافة المراجعة:", res.data);
       } catch (err) {
         console.error(err.response?.data || err);
       }
       await this.getReviwes(this.$route.params.idparam);
+      this.reviewPage = 1;
     },
     Addtolist(item) {
       this.SingleProduct.quantity = this.quint;
@@ -460,11 +465,52 @@ export default {
       if (q == 1) return;
       else this.quint--;
     },
+    async loadMoreReviews() {
+      if (this.loadingReviews) return;
+
+      if (
+        this.reviewPagination &&
+        this.reviewPage >= this.reviewPagination.last_page
+      ) {
+        return;
+      }
+
+      this.loadingReviews = true;
+
+      this.reviewPage++;
+
+      const res = await fetch(
+        `${this.domin}show/reviwe/${this.$route.params.idparam}?page=${this.reviewPage}`,
+      );
+
+      const data = await res.json();
+
+      this.Reviwes.push(...data.Proreviwes.data);
+
+      this.loadingReviews = false;
+    },
+
+    initReviewScroll() {
+      const reviewsBox = document.querySelector("#revews");
+
+      if (!reviewsBox) return;
+
+      reviewsBox.addEventListener("scroll", async () => {
+        const nearBottom =
+          reviewsBox.scrollTop + reviewsBox.clientHeight >=
+          reviewsBox.scrollHeight - 100;
+
+        if (nearBottom) {
+          await this.loadMoreReviews();
+        }
+      });
+    },
   },
 
   async mounted() {
     await this.getSingle(this.$route.params.idparam);
     await this.getReviwes(this.$route.params.idparam);
+    this.initReviewScroll();
     setTimeout(() => {}, 100);
     window.scroll(0, 0);
 

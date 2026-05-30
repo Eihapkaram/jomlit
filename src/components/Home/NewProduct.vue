@@ -13,7 +13,11 @@
       </header>
 
       <div class="grid">
-        <div v-for="pro in all.slice(0, 6)" :key="pro.id" class="product-card">
+        <div
+          v-for="pro in Lmmitpro.slice(0, 6)"
+          :key="pro.id"
+          class="product-card"
+        >
           <div id="parantimg1" class="img-wrapper">
             <div
               v-if="pro.stock < 1"
@@ -156,11 +160,11 @@ import { mapActions, mapState } from "pinia";
 export default {
   inject: ["Emitter"],
   computed: {
-    ...mapState(mystore, ["all", "domin"]),
+    ...mapState(mystore, ["Lmmitpro", "domin"]),
     ...mapState(CartStore1, ["CartProduct2"]),
   },
   methods: {
-    ...mapActions(mystore, ["getall"]),
+    ...mapActions(mystore, ["getall2"]),
     ...mapActions(CartStore1, ["Additem", "Additem2", "GetCart2"]),
     ...mapActions(ListsStore1, ["AdditemL"]),
     async Add(pro) {
@@ -177,7 +181,7 @@ export default {
           this.Add(pro);
           let textem2 = "تم اضافه المنتج ف العربة";
           let act = true;
-          let op={textem2,act};
+          let op = { textem2, act };
           this.Emitter.emit("cart", op);
         }
       } else {
@@ -196,7 +200,7 @@ export default {
       this.count = price / url;
     },
     check() {
-      if (this.all.length <= 30) {
+      if (this.Lmmitpro.length <= 30) {
         this.loading = true;
       } else {
         this.loading = false;
@@ -211,7 +215,7 @@ export default {
     },
   },
   async mounted() {
-    await this.getall();
+    await this.getall2();
   },
 };
 </script>

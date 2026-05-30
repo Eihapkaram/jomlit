@@ -15,6 +15,7 @@
           }"
           :slides-per-view="3"
           :spaceBetween="20"
+          @reachEnd="loadMore"
           :modules="modules"
           :loop="true"
           :breakpoints="{
@@ -64,7 +65,7 @@ export default {
   components: { Swiper, SwiperSlide },
   inject: ["Emitter"],
   data() {
-    return {};
+    return { page: 1, loadingMore: false, lastPage: 1 };
   },
   computed: {
     ...mapState(mystore, ["catigoryProducts1", "domin", "top"]),
@@ -104,10 +105,25 @@ export default {
     goToCategory(id) {
       this.$router.push({ name: "derilse", params: { idparam: id } });
     },
+    async loadMore() {
+      if (this.loadingMore) return;
+      if (this.page >= this.lastPage) return;
+
+      this.loadingMore = true;
+
+      this.page++;
+
+      const cat = "مميز";
+
+      await this.getCatigoryProduct1(cat, false, this.page);
+
+      this.loadingMore = false;
+    },
   },
   async mounted() {
-    await this.getCatigoryProduct1("مميز");
-    await this.topall();
+    const res = await this.getCatigoryProduct1("مميز", true, 1);
+
+    this.lastPage = res.last_page;
   },
   setup() {
     return { modules: [Autoplay] };

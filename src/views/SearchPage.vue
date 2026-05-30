@@ -1,139 +1,130 @@
 <template>
-  <span v-if="searchrsult.length === 0">لم يتم العثور على المنتج</span>
-  <v-lazy
-    :min-height="200"
-    :options="{ threshold: 0.5 }"
-    transition="fade-transition"
-  >
-    <v-progress-linear
-      color="blue"
-      indeterminate
-      v-if="load"
-    ></v-progress-linear>
-    <div class="grid">
-      <div v-for="pro in searchrsult" :key="pro.id" class="product-card">
-        <div id="parantimg1" class="img-wrapper">
-          <div
-            v-if="pro.stock < 1"
-            style="
-              position: absolute;
-              top: 100px;
-              left: 0;
-              align-content: center;
-              z-index: 5;
-              width: 100%;
-              height: fit-content;
-              background-color: lightcoral;
-            "
+  <span v-if="!load && searchrsult.length === 0">
+    لم يتم العثور على المنتج
+  </span>
+
+  <v-progress-linear color="blue" indeterminate v-if="load"></v-progress-linear>
+  <div class="grid">
+    <div v-for="pro in searchrsult" :key="pro.id" class="product-card">
+      <div id="parantimg1" class="img-wrapper">
+        <div
+          v-if="pro.stock < 1"
+          style="
+            position: absolute;
+            top: 100px;
+            left: 0;
+            align-content: center;
+            z-index: 5;
+            width: 100%;
+            height: fit-content;
+            background-color: lightcoral;
+          "
+        >
+          <h3 style="color: red; font-size: bold; position: relative">
+            المنتج غير متوفر حاليا
+          </h3>
+        </div>
+        <v-btn
+          @click="this.Emitter.emit('dilog', pro)"
+          rounded
+          variant="outliened"
+          id="quick"
+          ripple
+          >نظره سريعه</v-btn
+        >
+        <img :src="domin + pro.img" :alt="pro.title" loading="lazy" />
+        <v-row
+          style="
+            position: absolute;
+            gap: auto;
+            align-content: center;
+            justify-content: center;
+          "
+        >
+          <button
+            class="love-btn"
+            :class="{ active: pro.loved }"
+            @click="toggleLove(pro)"
           >
-            <h3 style="color: red; font-size: bold; position: relative">
-              المنتج غير متوفر حاليا
-            </h3>
-          </div>
-          <v-btn
-            @click="this.Emitter.emit('dilog', pro)"
-            rounded
-            variant="outliened"
-            id="quick"
-            ripple
-            >نظره سريعه</v-btn
+            <v-icon>{{ pro.loved ? "mdi-heart" : "mdi-heart-outline" }}</v-icon>
+            <v-spacer></v-spacer>
+          </button>
+          <span v-if="pro.discount > 0" id="availbel" class="d-flex"
+            >%{{ pro.discount }}</span
           >
-          <img :src="domin + pro.img" :alt="pro.title" loading="lazy" />
-          <v-row
-            style="
-              position: absolute;
-              gap: auto;
-              align-content: center;
-              justify-content: center;
-            "
+        </v-row>
+      </div>
+
+      <div class="info">
+        <h3 class="title">{{ pro.titel }}</h3>
+        <div class="price-row">
+          <span v-if="pro.discount != 0">بدلا من </span>
+          <span
+            v-if="pro.discount != 0"
+            style="text-decoration: line-through"
+            class=""
+            >{{
+              Math.floor(pro.price) +
+              (pro.discount / 100) * Math.floor(pro.price)
+            }}
+            ج.م</span
           >
-            <button
-              class="love-btn"
-              :class="{ active: pro.loved }"
-              @click="toggleLove(pro)"
-            >
-              <v-icon>{{
-                pro.loved ? "mdi-heart" : "mdi-heart-outline"
-              }}</v-icon>
-              <v-spacer></v-spacer>
-            </button>
-            <span v-if="pro.discount > 0" id="availbel" class="d-flex"
-              >%{{ pro.discount }}</span
-            >
-          </v-row>
+
+          <span v-if="pro.discount != 0">بسعر :</span
+          ><span class="price">{{ Math.floor(pro.price) }} ج.م</span>
+        </div>
+        <p class="brand">العلامة التجارية: {{ pro.brand }}</p>
+
+        <v-rating
+          v-model="pro.votes"
+          readonly
+          :length="5"
+          :size="18"
+          active-color="#d4a017"
+        />
+
+        <!-- ✅ الوصف القابل للتمرير -->
+        <div class="desc">
+          {{ pro.description }}
         </div>
 
-        <div class="info">
-          <h3 class="title">{{ pro.titel }}</h3>
-          <div class="price-row">
-            <span v-if="pro.discount != 0">بدلا من </span>
-            <span
-              v-if="pro.discount != 0"
-              style="text-decoration: line-through"
-              class=""
-              >{{
-                Math.floor(pro.price) +
-                (pro.discount / 100) * Math.floor(pro.price)
-              }}
-              ج.م</span
-            >
+        <div class="details">
+          🧃 <strong> {{ pro.Counttype }}:</strong> تحتوي على
+          <strong>{{ pro.inCount }}</strong> {{ pro.inCounttype }}
+          <br />
+          💰 <strong>سعر {{ pro.inCounttype }}:</strong>
+          <span>{{ Math.floor(pro.price / pro.inCount) }}</span> ج.م
+        </div>
 
-            <span v-if="pro.discount != 0">بسعر :</span
-            ><span class="price">{{ Math.floor(pro.price) }} ج.م</span>
-          </div>
-          <p class="brand">العلامة التجارية: {{ pro.brand }}</p>
-
-          <v-rating
-            v-model="pro.votes"
-            readonly
-            :length="5"
-            :size="18"
-            active-color="#d4a017"
-          />
-
-          <!-- ✅ الوصف القابل للتمرير -->
-          <div class="desc">
-            {{ pro.description }}
-          </div>
-
-          <div class="details">
-            🧃 <strong> {{ pro.Counttype }}:</strong> تحتوي على
-            <strong>{{ pro.inCount }}</strong> {{ pro.inCounttype }}
-            <br />
-            💰 <strong>سعر {{ pro.inCounttype }}:</strong>
-            <span>{{ Math.floor(pro.price / pro.inCount) }}</span> ج.م
-          </div>
-
-          <div>
-            <v-btn
-              class="cart-btn"
-              @click="
-                $router.push({ name: 'derilse', params: { idparam: pro.id } })
-              "
-            >
-              تفاصيل
-            </v-btn>
-            <v-btn class="cart-btn" @click="(pro.quantity = 1), funvaled(pro)">
-              🛒 أضف للسلة
-            </v-btn>
-          </div>
+        <div>
+          <v-btn
+            class="cart-btn"
+            @click="
+              $router.push({ name: 'derilse', params: { idparam: pro.id } })
+            "
+          >
+            تفاصيل
+          </v-btn>
+          <v-btn class="cart-btn" @click="(pro.quantity = 1), funvaled(pro)">
+            🛒 أضف للسلة
+          </v-btn>
         </div>
       </div>
-      <v-container fluid v-if="loading">
-        <v-row>
-          <v-col cols="12">
-            <v-row>
-              <v-col cols="12">
-                <v-skeleton-loader
-                  class="mx-auto border"
-                  id="cardskl"
-                  style=""
-                  type="image, article, button, button"
-                ></v-skeleton-loader>
-              </v-col> </v-row></v-col></v-row
-      ></v-container>
     </div>
-  </v-lazy>
+    <v-container fluid v-if="loading">
+      <v-row>
+        <v-col cols="12">
+          <v-row>
+            <v-col cols="12">
+              <v-skeleton-loader
+                class="mx-auto border"
+                id="cardskl"
+                style=""
+                type="image, article, button, button"
+              ></v-skeleton-loader>
+            </v-col> </v-row></v-col></v-row
+    ></v-container>
+  </div>
 </template>
 
 <script>
@@ -145,13 +136,24 @@ import { CartStore1 } from "@/store/Cart";
 export default {
   inject: ["Emitter"],
   data() {
-    return { load: false };
+    return { load: false, loadingMore: false, page: 1 };
   },
-  computed: { ...mapState(mystore, ["searchrsult", "domin"]) },
+  computed: {
+    ...mapState(mystore, ["searchrsult", "domin", "searchLastPage"]),
+  },
   methods: {
     ...mapActions(mystore, ["getSearchProduct"]),
     ...mapActions(CartStore1, ["Additem", "Additem2", "GetCart2"]),
     ...mapActions(ListsStore1, ["AdditemL", "updateL"]),
+    debounce(func, delay = 300) {
+      let timer;
+      return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+          func.apply(this, args);
+        }, delay);
+      };
+    },
     async Add(pro) {
       if (localStorage.getItem("token")) {
         await this.Additem2(pro);
@@ -194,22 +196,55 @@ export default {
         this.AdditemL(pro);
       }
     },
+
+    async handleScroll() {
+      if (this.loadingMore) return;
+
+      if (this.page >= this.searchLastPage) return;
+
+      const scrollPosition = window.innerHeight + window.scrollY;
+      const pageHeight = document.documentElement.scrollHeight;
+
+      if (scrollPosition >= pageHeight - 300) {
+        this.loadingMore = true;
+
+        try {
+          this.page++;
+
+          await this.getSearchProduct(this.$route.params.products, this.page);
+        } catch (err) {
+          console.error(err);
+          this.page--;
+        } finally {
+          this.loadingMore = false;
+        }
+      }
+    },
   },
-  async mounted() {
+  mounted() {
     window.scroll(0, 0);
+
     this.load = true;
-    setTimeout(() => {
-      this.getSearchProduct(this.$route.params.products);
+    this.getSearchProduct(this.$route.params.products, 1).finally(() => {
       this.load = false;
-    }, 500);
+    });
+
+    this.debouncedScroll = this.debounce(this.handleScroll, 200);
+    window.addEventListener("scroll", this.debouncedScroll);
   },
+  beforeUnmount() {
+    window.removeEventListener("scroll", this.debouncedScroll);
+  },
+
   watch: {
-    $route() {
+    async $route() {
+      this.page = 1;
+      this.searchrsult = []; // مهم
       this.load = true;
-      setTimeout(() => {
-        this.getSearchProduct(this.$route.params.products);
-        this.load = false;
-      }, 500);
+
+      await this.getSearchProduct(this.$route.params.products, 1);
+
+      this.load = false;
     },
   },
 };

@@ -21,7 +21,9 @@ export const mystore = defineStore("mystore", {
     top: "",
     adminSupplierorders: "",
     topsoldproducts: "",
-    searchrsult: "",
+    searchrsult: [],
+    searchPage: 1,
+    searchLastPage: 1,
     userscarts: "",
     topCustomer: "",
     mostaddedproducts: "",
@@ -51,7 +53,14 @@ export const mystore = defineStore("mystore", {
     catigoryProducts: "",
     catigoryProducts1: "",
     catigoryiesDashboard: "",
-    userorders: "",
+
+    userorders: [],
+    orderPagination: {
+      current_page: 1,
+      last_page: 1,
+      per_page: 10,
+      total: 0,
+    },
     CartData: "",
     CartData2: "",
     domin: "https://web-production-a3905.up.railway.app/api/",
@@ -69,6 +78,9 @@ export const mystore = defineStore("mystore", {
       this.userRole = null;
 
       localStorage.removeItem("token");
+    },
+    appendOrders(newOrders) {
+      this.userorders.push(...newOrders);
     },
     async getruslt(item) {
       this.result.push(item);
@@ -107,11 +119,21 @@ export const mystore = defineStore("mystore", {
       this.SingleProduct = data.data;
     },
 
-    async getReviwes(id) {
-      const res = await fetch(`${this.domin}show/reviwe/${id}`);
+    async getReviwes(id, page = 1) {
+      const res = await fetch(`${this.domin}show/reviwe/${id}?page=${page}`);
+
       const data = await res.json();
-      this.Reviwes = data.Proreviwes;
+
+      this.Reviwes = data.Proreviwes.data; // الريفيوهات فقط
+
+      this.reviewPagination = {
+        current_page: data.Proreviwes.current_page,
+        last_page: data.Proreviwes.last_page,
+        per_page: data.Proreviwes.per_page,
+        total: data.Proreviwes.total,
+      };
     },
+
     async Addinquiries(name, email, message, phone, subject) {
       const token = localStorage.getItem("token");
       try {
@@ -256,17 +278,29 @@ export const mystore = defineStore("mystore", {
         console.error(err.response?.data || err);
       }
     },
-    async userordersShow() {
+    async userordersShow(page = 1) {
       const token = localStorage.getItem("token");
+
       try {
-        const res = await axios.get(`${this.domin}order/show`, {
-          headers: { Authorization: `Bearer ${token}` },
+        const res = await axios.get(`${this.domin}order/show?page=${page}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         });
-        this.userorders = res.data.order;
+
+        this.userorders = res.data.order.data;
+
+        this.orderPagination = {
+          current_page: res.data.order.current_page,
+          last_page: res.data.order.last_page,
+          per_page: res.data.order.per_page,
+          total: res.data.order.total,
+        };
       } catch (err) {
         console.error(err.response?.data || err);
       }
     },
+
     async usersCarts() {
       const token = localStorage.getItem("token");
       try {
@@ -501,12 +535,20 @@ export const mystore = defineStore("mystore", {
       }
     },
 
-    async getCatigoryProduct1(catigory) {
+    async getCatigoryProduct1(catigory, reset = false, page = 1) {
       const res = await fetch(
-        `${this.domin}search/cate?filter[categorie.name]=${catigory}`,
+        `${this.domin}search/cate?filter[categorie.name]=${catigory}&page=${page}`,
       );
+
       const data = await res.json();
-      this.catigoryProducts1 = data.result;
+
+      if (reset) {
+        this.catigoryProducts1 = data.result.data;
+      } else {
+        this.catigoryProducts1.push(...data.result.data);
+      }
+
+      return data.result;
     },
 
     async getCatigoryDash() {
@@ -577,12 +619,21 @@ export const mystore = defineStore("mystore", {
       this.getProductsBycategoryslug = data.products;
     },
 
-    async getSearchProduct(query) {
+    async getSearchProduct(query, page = 1) {
       const res = await fetch(
-        `${this.domin}search/cate?filter[titel]=${query}`,
+        `${this.domin}search/cate?filter[titel]=${query}&page=${page}`,
       );
+
       const data = await res.json();
-      this.searchrsult = data.result;
+
+      if (page === 1) {
+        this.searchrsult = []; // ✅ مهم جداً
+      }
+
+      this.searchrsult.push(...data.result.data);
+
+      this.searchPage = data.result.current_page;
+      this.searchLastPage = data.result.last_page;
     },
     async searchCatigorybyname(catigory) {
       const res = await fetch(`${this.domin}search?filter[slug]=${catigory}`);

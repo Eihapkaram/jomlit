@@ -196,11 +196,7 @@
                   style="margin-inline: 10px"
                   variant="tonal"
                   size="small"
-                  @click="
-                    order.seller_id
-                      ? RejectOrder(order.id)
-                      : RejectOrder(order.id)
-                  "
+                  @click="RejectOrder(order.id)"
                 >
                   <v-icon start>mdi-delete</v-icon>
                   رفض الطلبية
@@ -430,25 +426,24 @@ export default {
   data() {
     return {
       autoRefreshTimer: null, // المؤقت للتحديث التلقائي
+      loadingMore: false,
+      page: 1,
     };
   },
   async mounted() {
-    await this.userordersShow();
+    this.page = 1;
+    await this.userordersShow(1);
 
-    // ✅ تحديث تلقائي كل 10 ثواني
-    this.autoRefreshTimer = setInterval(async () => {
-      await this.userordersShow();
-    }, 10000);
+    window.addEventListener("scroll", this.handleScroll);
   },
   beforeUnmount() {
-    // تنظيف التايمر عند مغادرة الصفحة
-    clearInterval(this.autoRefreshTimer);
+    window.removeEventListener("scroll", this.handleScroll);
   },
   computed: {
     ...mapState(mystore, ["domin", "userorders", "userRole"]),
   },
   methods: {
-    ...mapActions(mystore, ["userordersShow"]),
+    ...mapActions(mystore, ["userordersShow", "appendOrders"]),
 
     async downinvoice(id) {
       const token = localStorage.getItem("token");
@@ -458,7 +453,7 @@ export default {
           responseType: "blob",
         });
         const fileURL = window.URL.createObjectURL(
-          new Blob([res.data], { type: "application/pdf" })
+          new Blob([res.data], { type: "application/pdf" }),
         );
         const link = document.createElement("a");
         link.href = fileURL;
@@ -470,7 +465,7 @@ export default {
       } catch (err) {
         console.error(
           "❌ خطأ أثناء تحميل الفاتورة:",
-          err.response?.data || err
+          err.response?.data || err,
         );
       }
     },
@@ -481,9 +476,10 @@ export default {
         await axios.put(
           `${this.domin}order/update/${id}`,
           { status },
-          { headers: { Authorization: `Bearer ${token}` } }
+          { headers: { Authorization: `Bearer ${token}` } },
         );
-        await this.userordersShow();
+        this.page = 1;
+        await this.userordersShow(1);
       } catch (err) {
         console.error(err.response?.data || err);
       }
@@ -497,9 +493,10 @@ export default {
           {},
           {
             headers: { Authorization: `Bearer ${token}` },
-          }
+          },
         );
-        await this.userordersShow();
+        this.page = 1;
+        await this.userordersShow(1);
       } catch (err) {
         console.error(err.response?.data || err);
       }
@@ -513,9 +510,10 @@ export default {
           {},
           {
             headers: { Authorization: `Bearer ${token}` },
-          }
+          },
         );
-        await this.userordersShow();
+        this.page = 1;
+        await this.userordersShow(1);
       } catch (err) {
         console.error(err.response?.data || err);
       }
@@ -547,6 +545,47 @@ export default {
         cancelled: "ملغي",
       };
       return map[status] || "غير معروف";
+    },
+    async handleScroll() {
+      if (this.loadingMore) return;
+
+      const lastPage =
+        this.$pinia.state.value.mystore.orderPagination?.last_page || 1;
+
+      if (this.page >= lastPage) {
+        return;
+      }
+
+      const scrollPosition = window.innerHeight + window.scrollY;
+
+      const pageHeight = document.documentElement.scrollHeight;
+
+      if (scrollPosition >= pageHeight - 300) {
+        this.loadingMore = true;
+
+        this.page++;
+
+        const token = localStorage.getItem("token");
+
+        try {
+          const res = await axios.get(
+            `${this.domin}order/show?page=${this.page}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            },
+          );
+
+          this.appendOrders(res.data.order.data);
+        } catch (err) {
+          console.error(err.response?.data || err);
+
+          this.page--; // يرجع الصفحة لو الطلب فشل
+        } finally {
+          this.loadingMore = false;
+        }
+      }
     },
   },
 };
