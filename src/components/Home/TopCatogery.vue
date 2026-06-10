@@ -8,6 +8,7 @@
       <v-container>
         <h2 class="section-title">منتجات مميزة</h2>
         <swiper
+          v-if="catigoryProducts1 && catigoryProducts1.length"
           :centeredSlides="false"
           :autoplay="{
             delay: 2500,
@@ -24,7 +25,10 @@
             1024: { slidesPerView: 3, spaceBetween: 20 },
           }"
         >
-          <swiper-slide v-for="(item, i) in top" :key="i">
+          <swiper-slide
+            v-for="(item, i) in catigoryProducts1"
+            :key="item.id || i"
+          >
             <div class="category-card">
               <div class="card-horizontal">
                 <div class="image-wrapper">

@@ -621,7 +621,7 @@ export const mystore = defineStore("mystore", {
 
     async getSearchProduct(query, page = 1) {
       const res = await fetch(
-        `${this.domin}search/cate?filter[titel]=${query}&page=${page}`,
+        `${this.domin}search/cate2?filter[titel]=${query}&page=${page}`,
       );
 
       const data = await res.json();
