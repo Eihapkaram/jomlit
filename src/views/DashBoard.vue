@@ -78,6 +78,7 @@ export default {
       "domin",
       "user",
       "userscarts",
+      "orderCounSeller",
       "ordersbyCoustomer",
       "ordersbySeller",
       "Queries",
@@ -123,7 +124,7 @@ export default {
           titel: "الطلبات",
           url: "orders",
           icon: "mdi-cart-outline",
-          cont: this.ordersbyCoustomer?.length || 0,
+          cont: this.ordersbyCoustomer?.length + this.ordersbySeller?.length || 0,
         },
 
         {
@@ -204,6 +205,7 @@ export default {
       "Users",
       "usersCarts",
       "ordersShow",
+      "OrdCounSeller",
       "allordersbySeller",
       "QueriesShow",
       "Pages",

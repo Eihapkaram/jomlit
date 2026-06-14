@@ -554,7 +554,7 @@ export default {
   background-color: rgb(245, 165, 165);
   width: fit-content;
   position: relative;
-  left: -96px;
+  left: -91px;
   top: -70px;
   height: 30px;
 }
@@ -617,7 +617,7 @@ export default {
 .love-btn {
   position: relative;
   top: -70px;
-  left: 96px;
+  left: 91px;
   background: rgba(255, 255, 255, 0.85);
   border: none;
   border-radius: 10px;
@@ -752,7 +752,7 @@ export default {
     background-color: rgb(247, 158, 158);
     width: fit-content;
     position: relative;
-    left: -96px;
+    left: -91px;
     top: -70px;
     height: 30px;
   }
@@ -831,14 +831,14 @@ export default {
   .love-btn {
     position: relative;
     top: -70px;
-    left: 97px;
+    left: 91px;
     background: rgba(255, 255, 255, 0.85);
     border: none;
     border-radius: 10px;
     padding: 6px 9px;
     cursor: pointer;
     transition: 0.3s;
-    font-size: 14px;
+    font-size: 13px;
     color: rgb(243, 6, 6);
   }
   .love-btn:hover {
