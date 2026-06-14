@@ -439,6 +439,7 @@ export default {
 #availbel {
   color: rgb(255, 0, 0);
   border-radius: 5px;
+  font-weight: bold;
   padding: 5px;
   background-color: rgb(245, 165, 165);
   width: fit-content;
@@ -506,7 +507,7 @@ export default {
 .love-btn {
   position: relative;
   top: -70px;
-  left: 91px;
+  left: 85px;
   background: rgba(255, 255, 255, 0.85);
   border: none;
   border-radius: 10px;
@@ -638,6 +639,7 @@ export default {
     color: rgb(252, 0, 0);
     border-radius: 5px;
     padding: 5px;
+    font-weight: bold;
     background-color: rgb(247, 158, 158);
     width: fit-content;
     position: relative;
@@ -841,6 +843,7 @@ export default {
   #availbel {
     color: rgb(243, 16, 16);
     border-radius: 5px;
+    font-weight: bold;
     padding: 2px;
     background-color: rgb(236, 216, 216);
     width: fit-content;

@@ -477,7 +477,7 @@ export default {
 .love-btn {
   position: relative;
   top: -70px;
-  left: 91px;
+  left: 85px;
   background: rgba(255, 255, 255, 0.85);
   border: none;
   border-radius: 10px;

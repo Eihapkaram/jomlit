@@ -124,7 +124,8 @@ export default {
           titel: "الطلبات",
           url: "orders",
           icon: "mdi-cart-outline",
-          cont: this.ordersbyCoustomer?.length + this.ordersbySeller?.length || 0,
+          cont:
+            this.ordersbyCoustomer?.length + this.ordersbySeller?.length || 0,
         },
 
         {
