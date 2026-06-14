@@ -124,6 +124,14 @@
               ></v-skeleton-loader>
             </v-col> </v-row></v-col></v-row
     ></v-container>
+    <!-- لودينج تحميل المنتجات الجديدة -->
+    <v-container v-if="loadingMore" class="text-center py-4">
+      <v-progress-circular
+        indeterminate
+        color="primary"
+        size="45"
+      ></v-progress-circular>
+    </v-container>
   </div>
 </template>
 

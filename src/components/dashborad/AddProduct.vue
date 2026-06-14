@@ -4,107 +4,133 @@
 
     <keep-alive>
       <form @submit.prevent="this.actfun()" method="Post">
-        <v-file-input
-          @change="onFileChange"
-          placeholder="img"
-          name="img"
-          id="img"
-        ></v-file-input>
-        <v-file-input
-          placeholder="images_url"
-          multiple
-          name="images_url"
-          @change="onFileChange2"
-        ></v-file-input>
-        <v-text-field
-          v-model="titel"
-          placeholder="title"
-          name="titel"
-        ></v-text-field>
-        <v-textarea
-          placeholder="description"
-          v-model="description"
-          rows="10"
-          name="description"
-        ></v-textarea>
-        <v-text-field
-          v-model="brand"
-          placeholder="brand"
-          name="brand"
-        ></v-text-field>
-        <v-text-field
-          v-model="page_id"
-          placeholder="page_id"
-          name="page_id"
-        ></v-text-field>
-        <v-text-field
-          placeholder="votes"
-          v-model="votes"
-          name="votes"
-          type="number"
-        ></v-text-field>
-        <v-text-field
-          v-model="stock"
-          placeholder="stock"
-          name="stock"
-          type="number"
-        ></v-text-field>
-        <v-text-field
-          v-model="price"
-          placeholder="price"
-          name="price"
-          type="number"
-        ></v-text-field>
-        <v-text-field
-          v-model="category_id"
-          placeholder="category_id"
-          name="category_id"
-          type="number"
-        ></v-text-field>
-        <v-text-field
-          v-model="url"
-          placeholder="سياسه الارجاع"
-          name="url"
-        ></v-text-field>
-        <v-text-field
-          v-model="count"
-          placeholder="عدد العلب او الاكياس"
-          name="count"
-        ></v-text-field>
+        <div class="form-layout">
+          <!-- يمين -->
+          <div class="right-side">
+            <img width="200px" :src="showimg" />
 
-        <v-text-field
-          v-model="discount"
-          placeholder="تخفيض"
-          name="discount"
-        ></v-text-field>
+            <v-file-input
+              @change="onFileChange"
+              placeholder="img"
+              name="img"
+              id="img"
+            ></v-file-input>
 
-        <v-text-field
-          v-model="inCounttype"
-          placeholder="الحاجه الي جوه الكرتونه علبه\كيس\برطمان"
-          name="inCounttype"
-        ></v-text-field>
+            <v-file-input
+              placeholder="images_url"
+              multiple
+              name="images_url"
+              @change="onFileChange2"
+            ></v-file-input>
+          </div>
 
-        <v-text-field
-          v-model="Counttype"
-          placeholder="كرتونه"
-          name="Counttype"
-        ></v-text-field>
-        <span class="d-flex">
-          <v-btn
-            type="submit"
-            @click="active = true"
-            class="bg-black"
-            id="btnadd"
-            variant="outline"
-            ><span id="addtext">
-              <span v-if="!active"> Add to product</span></span
-            >
-            <v-progress-circular
-              v-if="active"
-              indeterminate
-            ></v-progress-circular
-          ></v-btn>
-        </span>
+          <!-- شمال -->
+          <div class="left-side">
+            <div class="grid-fields">
+              <v-text-field
+                v-model="titel"
+                placeholder="title"
+                name="titel"
+              ></v-text-field>
+
+              <v-text-field
+                v-model="brand"
+                placeholder="brand"
+                name="brand"
+              ></v-text-field>
+
+              <v-text-field
+                v-model="page_id"
+                placeholder="page_id"
+                name="page_id"
+              ></v-text-field>
+
+              <v-text-field
+                placeholder="votes"
+                v-model="votes"
+                name="votes"
+                type="number"
+              ></v-text-field>
+
+              <v-text-field
+                v-model="stock"
+                placeholder="stock"
+                name="stock"
+                type="number"
+              ></v-text-field>
+
+              <v-text-field
+                v-model="price"
+                placeholder="price"
+                name="price"
+                type="number"
+              ></v-text-field>
+
+              <v-text-field
+                v-model="category_id"
+                placeholder="category_id"
+                name="category_id"
+                type="number"
+              ></v-text-field>
+
+              <v-text-field
+                v-model="discount"
+                placeholder="تخفيض"
+                name="discount"
+              ></v-text-field>
+
+              <v-text-field
+                v-model="count"
+                placeholder="عدد العلب او الاكياس"
+                name="count"
+              ></v-text-field>
+
+              <v-text-field
+                v-model="Counttype"
+                placeholder="كرتونه"
+                name="Counttype"
+              ></v-text-field>
+
+              <v-text-field
+                v-model="inCounttype"
+                placeholder="الحاجه الي جوه الكرتونه علبه\\كيس\\برطمان"
+                name="inCounttype"
+              ></v-text-field>
+
+              <v-text-field
+                v-model="url"
+                placeholder="سياسه الارجاع"
+                name="url"
+              ></v-text-field>
+            </div>
+
+            <v-textarea
+              placeholder="description"
+              v-model="description"
+              rows="8"
+              name="description"
+            ></v-textarea>
+
+            <span class="d-flex">
+              <v-btn
+                type="submit"
+                @click="active = true"
+                class="bg-black"
+                id="btnadd"
+                variant="outline"
+              >
+                <span id="addtext">
+                  <span v-if="!active">Add to product</span>
+                </span>
+
+                <v-progress-circular
+                  v-if="active"
+                  indeterminate
+                ></v-progress-circular>
+              </v-btn>
+            </span>
+          </div>
+        </div>
       </form>
     </keep-alive>
   </div>
@@ -193,7 +219,7 @@ export default {
             headers: {
               Authorization: `Bearer ${token}`,
             },
-          }
+          },
         );
         console.log("تم إضافة المنتج:", res.data);
         let textem2 = "تم اضافه المنتج";
@@ -209,14 +235,93 @@ export default {
 </script>
 
 <style scoped>
+form {
+  max-width: 1400px;
+  margin: auto;
+  background: #fff;
+  border-radius: 18px;
+  padding: 30px;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08);
+}
+
+.form-layout {
+  display: flex;
+  gap: 35px;
+  align-items: flex-start;
+}
+
+.right-side {
+  width: 320px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.left-side {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.grid-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.right-side img {
+  width: 100%;
+  height: 250px;
+  object-fit: contain;
+  border: 2px dashed #d8d8d8;
+  border-radius: 15px;
+  padding: 12px;
+  background: #fafafa;
+}
+
 .v-text-field,
 .v-file-input,
 .v-textarea {
-  width: 600px;
+  width: 100%;
 }
+
+.d-flex {
+  display: flex;
+  justify-content: flex-start;
+}
+
 #btnadd {
-  border-radius: 30px;
+  width: 260px;
   height: 50px;
-  width: 300px;
+  border-radius: 30px;
+}
+
+@media (max-width: 1000px) {
+  .form-layout {
+    flex-direction: column;
+  }
+
+  .right-side {
+    width: 100%;
+  }
+
+  .right-side img {
+    max-width: 300px;
+    margin: auto;
+  }
+
+  .grid-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .d-flex {
+    justify-content: center;
+  }
+
+  #btnadd {
+    width: 100%;
+  }
 }
 </style>

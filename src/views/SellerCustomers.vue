@@ -309,7 +309,6 @@ import { mapState } from "pinia";
 
 export default {
   name: "SellerCustomers",
-
   data() {
     return {
       search: "",
@@ -326,58 +325,32 @@ export default {
       longitude: null,
       waLink: null,
       locationGranted: false,
-
-      // 🔐 security additions
-      submitting: false,
-      lastActionTime: 0,
+      headers: [
+        { title: "الاسم", key: "name" },
+        { title: "رقم الهاتف", key: "phone" },
+        { title: "ID", key: "id" },
+        { title: "تاريخ الإضافة", key: "created_at" },
+        { title: "الإجراءات", key: "actions", sortable: false },
+      ],
     };
   },
-
   computed: {
     ...mapState(mystore, ["domin"]),
   },
-
   methods: {
-    // ================= 🔐 SECURITY HELPERS =================
-
-    sanitize(val) {
-      if (!val) return "";
-      return String(val).trim().replace(/\s+/g, " ").replace(/[<>]/g, "");
-    },
-
-    canProceed() {
-      const now = Date.now();
-      if (now - this.lastActionTime < 1500) return false;
-      this.lastActionTime = now;
-      return true;
-    },
-
-    isValidPhone(phone) {
-      return /^[0-9+\s]{8,15}$/.test(phone);
-    },
-
-    // ================= ALERT =================
-
     showAlert(type, message) {
       this.alert = { show: true, type, message };
       setTimeout(() => (this.alert.show = false), 4000);
     },
 
-    // ================= FETCH =================
-
     async fetchCustomers() {
-      if (this.submitting) return;
-      if (!this.canProceed()) return;
-
       const token = localStorage.getItem("token");
       this.loading = true;
-
       try {
         const res = await axios.get(`${this.domin}seller/customers`, {
           headers: { Authorization: `Bearer ${token}` },
-          params: { search: this.sanitize(this.search), page: this.page },
+          params: { search: this.search, page: this.page },
         });
-
         this.customers = res.data.data || res.data;
         this.total = res.data.total || res.data.length;
       } catch {
@@ -386,187 +359,150 @@ export default {
         this.loading = false;
       }
     },
-
-    // ================= LOCATION =================
-
     async getCustomerLocation() {
       try {
-        if (this.submitting) return;
-        if (!this.canProceed()) return;
+        // ✅ طلب صلاحيات الموقع على أندرويد/آيفون (Cordova/Capacitor)
+        if (window.cordova && cordova.plugins && cordova.plugins.diagnostic) {
+          await new Promise((resolve, reject) => {
+            cordova.plugins.diagnostic.requestLocationAuthorization(
+              (status) => {
+                if (
+                  status ===
+                    cordova.plugins.diagnostic.permissionStatus.GRANTED ||
+                  status ===
+                    cordova.plugins.diagnostic.permissionStatus
+                      .GRANTED_WHEN_IN_USE
+                ) {
+                  resolve();
+                } else {
+                  reject("لم يتم منح صلاحية الموقع");
+                }
+              },
+              (err) => reject(err)
+            );
+          });
+        }
 
-        this.submitting = true;
-
+        // 🔍 الحصول على الموقع
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(
             (pos) => {
               this.latitude = pos.coords.latitude;
               this.longitude = pos.coords.longitude;
               this.locationGranted = true;
-              this.showAlert("success", "تم تحديد الموقع بنجاح");
-              this.submitting = false;
+              this.showAlert("success", "تم تحديد موقع العميل بنجاح ✅");
             },
-            () => {
-              this.showAlert("error", "فشل تحديد الموقع");
+            (err) => {
+              this.showAlert("error", "تعذر تحديد الموقع، يرجى السماح للموقع");
               this.locationGranted = false;
-              this.submitting = false;
             },
-            { enableHighAccuracy: true, timeout: 10000 },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
           );
         } else {
-          this.showAlert("error", "المتصفح لا يدعم الموقع");
-          this.submitting = false;
+          this.showAlert("error", "المتصفح لا يدعم تحديد الموقع");
         }
-      } catch (e) {
-        this.submitting = false;
-        this.showAlert("error", "خطأ في الموقع");
+      } catch (err) {
+        console.error(err);
+        this.showAlert("error", err || "خطأ في طلب صلاحيات الموقع");
       }
     },
 
-    // ================= CREATE CUSTOMER =================
+    async getCustomerLocationL() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            this.latitude = pos.coords.latitude;
+            this.longitude = pos.coords.longitude;
+            this.locationGranted = true;
+          },
+          () => {
+            this.showAlert("error", "يرجى السماح بمشاركة الموقع");
+            this.locationGranted = false;
+          }
+        );
+      } else {
+        this.showAlert("error", "المتصفح لا يدعم تحديد الموقع");
+      }
+    },
 
     async createCustomer() {
-      if (this.submitting) return;
-      if (!this.canProceed()) return;
-
       if (!this.locationGranted) {
         this.showAlert("error", "يجب تحديد موقع العميل أولًا");
         return;
       }
-
-      this.submitting = true;
-
+      const token = localStorage.getItem("token");
       try {
-        const token = localStorage.getItem("token");
-
-        const payload = {
-          name: this.sanitize(this.newCustomer.name),
-          phone: this.sanitize(this.newCustomer.phone),
-          latitude: this.latitude,
-          longitude: this.longitude,
-        };
-
-        if (!this.isValidPhone(payload.phone)) {
-          this.showAlert("error", "رقم الهاتف غير صحيح");
-          this.submitting = false;
-          return;
-        }
-
         const res = await axios.post(
           `${this.domin}seller/customers/new`,
-          payload,
-          { headers: { Authorization: `Bearer ${token}` } },
+          {
+            ...this.newCustomer,
+            latitude: this.latitude,
+            longitude: this.longitude,
+          },
+          { headers: { Authorization: `Bearer ${token}` } }
         );
-
         this.waLink = res.data.waLink;
+        console.log(res.data);
         this.showAlert("success", res.data.message);
-
         this.newCustomer = { name: "", phone: "" };
         this.locationGranted = false;
-
         this.fetchCustomers();
       } catch (err) {
         this.showAlert("error", err.response?.data?.message || "حدث خطأ");
-      } finally {
-        this.submitting = false;
       }
     },
 
-    // ================= LINK CUSTOMER =================
-
     async addExistingCustomer() {
-      if (this.submitting) return;
-      if (!this.canProceed()) return;
-
-      this.submitting = true;
-
+      const token = localStorage.getItem("token");
       try {
-        const token = localStorage.getItem("token");
-
-        const identifier = this.sanitize(this.identifier);
-
         const res = await axios.post(
           `${this.domin}seller/customers`,
-          { identifier },
-          { headers: { Authorization: `Bearer ${token}` } },
+          { identifier: this.identifier },
+          { headers: { Authorization: `Bearer ${token}` } }
         );
-
         this.showAlert("success", res.data.message);
         this.identifier = "";
         this.fetchCustomers();
       } catch {
         this.showAlert("error", "فشل ربط العميل");
-      } finally {
-        this.submitting = false;
       }
     },
 
-    // ================= DELETE =================
-
     async removeCustomer(id) {
-      if (this.submitting) return;
-      if (!this.canProceed()) return;
-
       if (!confirm("هل أنت متأكد من الحذف؟")) return;
-
-      this.submitting = true;
-
+      const token = localStorage.getItem("token");
       try {
-        const token = localStorage.getItem("token");
-
         const res = await axios.delete(`${this.domin}seller/customers/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-
         this.showAlert("success", res.data.message);
         this.fetchCustomers();
       } catch {
         this.showAlert("error", "حدث خطأ أثناء الحذف");
-      } finally {
-        this.submitting = false;
       }
     },
 
-    // ================= ORDERS =================
-
     async viewOrders(id) {
-      if (this.submitting) return;
-      if (!this.canProceed()) return;
-
-      this.submitting = true;
-
+      const token = localStorage.getItem("token");
       try {
-        const token = localStorage.getItem("token");
-
         const res = await axios.get(
           `${this.domin}seller/customers/${id}/orders`,
-          { headers: { Authorization: `Bearer ${token}` } },
+          { headers: { Authorization: `Bearer ${token}` } }
         );
-
         this.orders = res.data.orders || res.data;
         this.showOrdersDialog = true;
       } catch {
         this.showAlert("error", "فشل تحميل الطلبات");
-      } finally {
-        this.submitting = false;
       }
     },
 
-    // ================= INVOICE =================
-
     async downinvoice(id) {
-      if (this.submitting) return;
-      if (!this.canProceed()) return;
-
-      this.submitting = true;
-
+      const token = localStorage.getItem("token");
       try {
-        const token = localStorage.getItem("token");
-
         const res = await axios.get(`${this.domin}orders/${id}/invoice`, {
           headers: { Authorization: `Bearer ${token}` },
           responseType: "blob",
         });
-
         const fileURL = URL.createObjectURL(res.data);
         const link = document.createElement("a");
         link.href = fileURL;
@@ -575,12 +511,8 @@ export default {
         URL.revokeObjectURL(fileURL);
       } catch {
         this.showAlert("error", "فشل تحميل الفاتورة");
-      } finally {
-        this.submitting = false;
       }
     },
-
-    // ================= DATE =================
 
     formatDate(date) {
       return new Date(date).toLocaleDateString("ar-EG");

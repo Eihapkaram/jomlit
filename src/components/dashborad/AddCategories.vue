@@ -3,55 +3,73 @@
     <img width="200px" :src="showimg" />
     <keep-alive>
       <form @submit.prevent="this.actfun()" method="Post">
-        <v-file-input
-          @change="onFileChange"
-          placeholder="img"
-          name="img"
-          id="img"
-        ></v-file-input>
-        <v-file-input
-          @change="onFileChange2"
-          placeholder="banner"
-          name="banner"
-          id="banner"
-        ></v-file-input>
-        <v-text-field
-          v-model="name"
-          placeholder="name"
-          name="name"
-        ></v-text-field>
-        <v-textarea
-          placeholder="description"
-          v-model="description"
-          rows="10"
-          name="description"
-        ></v-textarea>
-        <v-text-field
-          v-model="slug"
-          placeholder="slug"
-          name="slug"
-        ></v-text-field>
-        <v-text-field
-          v-model="page_id"
-          placeholder="page_id"
-          name="page_id"
-        ></v-text-field>
-        <span class="d-flex">
-          <v-btn
-            type="submit"
-            @click="active = true"
-            class="bg-black"
-            id="btnadd"
-            variant="outline"
-            ><span id="addtext">
-              <span v-if="!active"> Add Categoreis</span></span
-            >
-            <v-progress-circular
-              v-if="active"
-              indeterminate
-            ></v-progress-circular
-          ></v-btn>
-        </span>
+        <div class="form-layout">
+          <!-- اليمين -->
+          <div class="right-side">
+            <img width="200px" :src="showimg" />
+
+            <v-file-input
+              @change="onFileChange"
+              placeholder="img"
+              name="img"
+              id="img"
+            ></v-file-input>
+
+            <v-file-input
+              @change="onFileChange2"
+              placeholder="banner"
+              name="banner"
+              id="banner"
+            ></v-file-input>
+          </div>
+
+          <!-- الشمال -->
+          <div class="left-side">
+            <v-text-field
+              v-model="name"
+              placeholder="name"
+              name="name"
+            ></v-text-field>
+
+            <v-textarea
+              placeholder="description"
+              v-model="description"
+              rows="10"
+              name="description"
+            ></v-textarea>
+
+            <v-text-field
+              v-model="slug"
+              placeholder="slug"
+              name="slug"
+            ></v-text-field>
+
+            <v-text-field
+              v-model="page_id"
+              placeholder="page_id"
+              name="page_id"
+            ></v-text-field>
+
+            <span class="d-flex">
+              <v-btn
+                type="submit"
+                @click="active = true"
+                class="bg-black"
+                id="btnadd"
+                variant="outline"
+              >
+                <span id="addtext">
+                  <span v-if="!active">Add Categoreis</span>
+                </span>
+
+                <v-progress-circular
+                  v-if="active"
+                  indeterminate
+                ></v-progress-circular>
+              </v-btn>
+            </span>
+          </div>
+        </div>
       </form>
     </keep-alive>
   </div>
@@ -116,7 +134,7 @@ export default {
             headers: {
               Authorization: `Bearer ${token}`,
             },
-          }
+          },
         );
         console.log("تم تعديل categories:", res.data);
         let textem2 = "تم اضافه قسم ";
@@ -132,14 +150,84 @@ export default {
 </script>
 
 <style scoped>
+form {
+  max-width: 1200px;
+  margin: auto;
+  background: #fff;
+  border-radius: 18px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.form-layout {
+  display: flex;
+  gap: 35px;
+  align-items: flex-start;
+}
+
+.right-side {
+  width: 320px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.left-side {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.right-side img {
+  width: 100%;
+  height: 250px;
+  object-fit: contain;
+  border: 2px dashed #ddd;
+  border-radius: 15px;
+  padding: 12px;
+  background: #fafafa;
+}
+
 .v-text-field,
 .v-file-input,
 .v-textarea {
-  width: 600px;
+  width: 100%;
 }
+
 #btnadd {
-  border-radius: 30px;
+  width: 250px;
   height: 50px;
-  width: 300px;
+  border-radius: 30px;
+}
+
+.d-flex {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 10px;
+}
+
+@media (max-width: 900px) {
+  .form-layout {
+    flex-direction: column;
+  }
+
+  .right-side {
+    width: 100%;
+  }
+
+  .right-side img {
+    max-width: 300px;
+    margin: auto;
+  }
+
+  .d-flex {
+    justify-content: center;
+  }
+
+  #btnadd {
+    width: 100%;
+  }
 }
 </style>

@@ -47,7 +47,7 @@ export const mystore = defineStore("mystore", {
     ordersbySeller: "",
     Queries: "",
     sellermyProfits: "",
-    offers: "",
+    offersdata: "",
     orderCoun: "",
     orderCounSeller: "",
     catigoryProducts: "",
@@ -156,7 +156,8 @@ export const mystore = defineStore("mystore", {
     async Offers() {
       const res = await fetch(`${this.domin}offers/active`);
       const data = await res.json();
-      this.offers = data;
+      this.offersdata = data;
+      console.log(this.offersdata);
     },
 
     async Cart() {

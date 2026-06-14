@@ -165,7 +165,7 @@ export default {
           await axios.post(
             `${this.domin}dashboard/offers/${this.form.id}`,
             formData,
-            { headers: { Authorization: `Bearer ${token}` } }
+            { headers: { Authorization: `Bearer ${token}` } },
           );
         } else {
           await axios.post(`${this.domin}dashboard/offers`, formData, {

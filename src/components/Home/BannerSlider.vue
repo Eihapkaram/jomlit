@@ -1,6 +1,7 @@
 <template>
   <div id="conb">
     <swiper
+      v-if="this.offers.length >= 1"
       :spaceBetween="30"
       :slides-per-view="1"
       :centeredSlides="false"
@@ -15,7 +16,7 @@
       :modules="modules"
       class="mySwiper"
     >
-      <swiper-slide v-for="(item, i) in offers" :key="i"
+      <swiper-slide v-for="(item, i) in offersdata" :key="i"
         ><img
           id="item"
           alt="banner"
@@ -60,21 +61,10 @@ export default {
     };
   },
   props: ["st"],
-  mounted: async function () {
-    await this.Offers();
-    window.setTimeout(function () {
-      window.setInterval(function () {
-        let mu = $(".swiper-slide-active");
-        if (mu) {
-          $(".swiper-slide-active .content").animate({ left: "0px" }, 1000);
-          $(".swiper-slide-active .content").css({ display: "flex" });
-        }
-      }, 3000);
-    }, 1000);
-  },
   computed: {
-    ...mapState(mystore, ["offers", "domin"]),
+    ...mapState(mystore, ["offersdata", "domin"]),
   },
+
   methods: {
     ...mapActions(mystore, ["Offers"]),
     async trialasync(id) {
@@ -156,6 +146,19 @@ export default {
         },
       });
     },
+  },
+  mounted: async function () {
+    await this.Offers();
+    console.log(this.offersdata);
+    window.setTimeout(function () {
+      window.setInterval(function () {
+        let mu = $(".swiper-slide-active");
+        if (mu) {
+          $(".swiper-slide-active .content").animate({ left: "0px" }, 1000);
+          $(".swiper-slide-active .content").css({ display: "flex" });
+        }
+      }, 3000);
+    }, 1000);
   },
 };
 </script>

@@ -83,7 +83,7 @@ export default {
             headers: {
               Authorization: `Bearer ${token}`,
             },
-          }
+          },
         );
         console.log("تم اضافه الصفحه ", res.data);
         let textem2 = "تم اضافه الصفحه";
