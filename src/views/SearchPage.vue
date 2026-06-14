@@ -444,7 +444,7 @@ export default {
   background-color: rgb(245, 165, 165);
   width: fit-content;
   position: relative;
-  left: -91px;
+  left: -85px;
   top: -70px;
   height: 30px;
 }
