@@ -443,9 +443,9 @@ export default {
   background-color: rgb(245, 165, 165);
   width: fit-content;
   position: relative;
-  left: -104px;
+  left: -96px;
   top: -70px;
-  height: 35px;
+  height: 30px;
 }
 .food-section {
   background-color: #faf8f3;
@@ -504,16 +504,16 @@ export default {
 }
 
 .love-btn {
-  position: absolute;
+  position: relative;
   top: -70px;
-  left: 85px;
+  left: 96px;
   background: rgba(255, 255, 255, 0.85);
   border: none;
   border-radius: 10px;
-  padding: 6px 10px;
+  padding: 6px 9px;
   cursor: pointer;
   transition: 0.3s;
-  font-size: 18px;
+  font-size: 14px;
   color: #6c8642;
 }
 .love-btn:hover {
@@ -641,7 +641,7 @@ export default {
     background-color: rgb(247, 158, 158);
     width: fit-content;
     position: relative;
-    left: -120px;
+    left: -96px;
     top: -70px;
     height: 30px;
   }
@@ -718,16 +718,16 @@ export default {
   }
 
   .love-btn {
-    position: absolute;
+    position: relative;
     top: -70px;
-    left: 100px;
+    left: 96px;
     background: rgba(255, 255, 255, 0.85);
     border: none;
     border-radius: 10px;
-    padding: 6px 10px;
+    padding: 6px 9px;
     cursor: pointer;
     transition: 0.3s;
-    font-size: 18px;
+    font-size: 14px;
     color: rgb(243, 6, 6);
   }
   .love-btn:hover {
@@ -846,20 +846,20 @@ export default {
     width: fit-content;
     position: relative;
     top: -70px;
-    left: -140px;
+    left: -118px;
     height: 30px;
   }
   .love-btn {
-    position: absolute;
+    position: relative;
     top: -70px;
-    left: 110px;
+    left: 120px;
     background: rgba(255, 255, 255, 0.85);
     border: none;
     border-radius: 10px;
-    padding: 6px 10px;
+    padding: 6px 9px;
     cursor: pointer;
     transition: 0.3s;
-    font-size: 18px;
+    font-size: 13px;
     color: #6c8642;
   }
   .love-btn:hover {

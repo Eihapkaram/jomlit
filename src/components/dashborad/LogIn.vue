@@ -134,45 +134,104 @@ export default {
       email: "",
       password: "",
       phone: "",
-      showPhoneForm: true, // ✅ الافتراضي تسجيل برقم الهاتف
+      showPhoneForm: true,
+
       message: "",
       messageType: "error",
+
+      // 🔐 security additions
+      submitting: false,
+      lastSubmitTime: 0,
     };
   },
+
   computed: {
     ...mapState(mystore, ["domin"]),
   },
+
   methods: {
-    ...mapActions(mystore,["login"]),
-    funlogin() {
-      axios
-        .post(`${this.domin}`, {
-          email: this.email,
-          password: this.password,
-        })
-        .then((res) => {
-           this.login(res.data.token,"customer")
-          this.$router.push("/");
-          console.log(res);
-        })
-        .catch((err) => console.log(err));
-      this.message = err.response?.data?.message || "حدث خطأ، حاول مرة أخرى";
-      this.messageType = "error";
+    ...mapActions(mystore, ["login"]),
+
+    // ================= 🔐 SECURITY HELPERS =================
+
+    sanitize(val) {
+      if (!val) return "";
+      return String(val).trim().replace(/\s+/g, " ").replace(/[<>]/g, ""); // منع basic injection
     },
-    funloginphone() {
-      axios
-        .post(`${this.domin}login-phone`, {
-          phone: this.phone,
+
+    canSubmit() {
+      const now = Date.now();
+      if (now - this.lastSubmitTime < 2000) return false; // منع spam clicks
+      this.lastSubmitTime = now;
+      return true;
+    },
+
+    isWeakPassword(pwd) {
+      return !pwd || pwd.length < 6;
+    },
+
+    // ================= EMAIL LOGIN =================
+
+    async funlogin() {
+      if (this.submitting) return;
+      if (!this.canSubmit()) return;
+
+      this.submitting = true;
+
+      try {
+        const email = this.sanitize(this.email);
+
+        if (this.isWeakPassword(this.password)) {
+          this.message = "كلمة المرور ضعيفة";
+          this.messageType = "error";
+          return;
+        }
+
+        const res = await axios.post(`${this.domin}login`, {
+          email,
           password: this.password,
-        })
-        .then((res) => {
-            this.login(res.data.token,"customer")
-          this.$router.push("/");
-          console.log(res);
-        })
-        .catch((err) => console.log(err));
-      this.message = err.response?.data?.message || "حدث خطأ، حاول مرة أخرى";
-      this.messageType = "error";
+        });
+
+        this.login(res.data.token, "customer");
+        this.$router.push("/");
+      } catch (err) {
+        this.message = err.response?.data?.message || "حدث خطأ، حاول مرة أخرى";
+        this.messageType = "error";
+      } finally {
+        this.submitting = false;
+      }
+    },
+
+    // ================= PHONE LOGIN =================
+
+    async funloginphone() {
+      if (this.submitting) return;
+      if (!this.canSubmit()) return;
+
+      this.submitting = true;
+
+      try {
+        const phone = this.sanitize(this.phone);
+
+        if (this.isWeakPassword(this.password)) {
+          this.message = "كلمة المرور ضعيفة";
+          this.messageType = "error";
+          return;
+        }
+
+        const res = await axios.post(`${this.domin}login-phone`, {
+          phone,
+          password: this.password,
+        });
+
+        this.login(res.data.token, "customer");
+        this.$router.push("/");
+      } catch (err) {
+        this.message = err.response?.data?.message || "حدث خطأ، حاول مرة أخرى";
+        this.messageType = "error";
+      } finally {
+        this.submitting = false;
+      }
     },
   },
 };

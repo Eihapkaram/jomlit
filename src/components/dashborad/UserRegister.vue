@@ -304,39 +304,60 @@ export default {
       active: false,
       massage: "",
       snackbar: false,
+
+      // 🔐 NEW SECURITY STATE
+      submitting: false,
+      lastSubmitTime: 0,
     };
   },
+
   computed: {
     ...mapState(mystore, ["domin", "token"]),
   },
-  methods: {
-    onFileChange(event) {
-      if (Array.isArray(event)) {
-        this.front_id_image = event[0];
-      } else if (event instanceof File) {
-        this.front_id_image = event;
-      } else if (event?.target?.files?.length) {
-        this.front_id_image = event.target.files[0];
-      } else {
-        this.front_id_image = null;
-      }
 
-      console.log(this.front_id_image);
+  methods: {
+    // ================= 🔐 SECURITY HELPERS =================
+
+    sanitize(val) {
+      if (!val) return "";
+      return String(val).trim().replace(/\s+/g, " ");
+    },
+
+    canSubmit() {
+      const now = Date.now();
+      if (now - this.lastSubmitTime < 2000) return false; // منع spam clicks
+      this.lastSubmitTime = now;
+      return true;
+    },
+
+    isWeakPassword(pwd) {
+      if (!pwd) return true;
+      return pwd.length < 6;
+    },
+
+    validateImage(file) {
+      if (!file) return true;
+
+      const allowed = ["image/jpeg", "image/png", "image/webp"];
+      const maxSize = 3 * 1024 * 1024; // 3MB
+
+      return allowed.includes(file.type) && file.size <= maxSize;
+    },
+
+    // ================= FILE HANDLING =================
+
+    onFileChange(event) {
+      this.front_id_image =
+        event?.target?.files?.[0] || event?.[0] || event || null;
     },
 
     onFileChange2(event) {
-      if (Array.isArray(event)) {
-        this.back_id_image = event[0];
-      } else if (event instanceof File) {
-        this.back_id_image = event;
-      } else if (event?.target?.files?.length) {
-        this.back_id_image = event.target.files[0];
-      } else {
-        this.back_id_image = null;
-      }
-
-      console.log(this.back_id_image);
+      this.back_id_image =
+        event?.target?.files?.[0] || event?.[0] || event || null;
     },
+
+    // ================= LOCATION =================
+
     requestLocation() {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
@@ -352,116 +373,165 @@ export default {
         alert("المتصفح لا يدعم خدمة الموقع الجغرافي");
       }
     },
+
+    // ================= REGISTER EMAIL =================
+
     async funregister() {
+      if (this.submitting) return;
+      if (!this.canSubmit()) return;
+
       if (!this.latitude || !this.longitude) {
         this.showLocationAlert = true;
         return;
       }
-      this.active = true;
-      const token = localStorage.getItem("token");
-      let formData = new FormData();
-      formData.append("name", this.name);
-      formData.append("last_name", this.last_name);
-      formData.append("email", this.email);
-      formData.append("password", this.password);
-      formData.append("latitude", this.latitude);
-      formData.append("longitude", this.longitude);
-      formData.append("security_question", this.security_question);
-      formData.append("security_answer", this.security_answer);
-      formData.append("terms_accepted", this.terms_accepted ? 1 : 0);
-      formData.append("role", this.role);
-      if (this.role === "seller") {
-        formData.append("wallet_number", this.wallet_number);
-        if (this.front_id_image) {
-          formData.append(
-            "front_id_image",
-            this.front_id_image,
-            this.front_id_image.name,
-          );
+
+      this.submitting = true;
+
+      try {
+        // 🔐 sanitize inputs
+        this.name = this.sanitize(this.name);
+        this.last_name = this.sanitize(this.last_name);
+        this.email = this.sanitize(this.email);
+        this.security_question = this.sanitize(this.security_question);
+        this.security_answer = this.sanitize(this.security_answer);
+
+        // 🔐 password check
+        if (this.isWeakPassword(this.password)) {
+          this.massage = "كلمة المرور ضعيفة";
+          this.snackbar = true;
+          this.submitting = false;
+          return;
         }
 
-        if (this.back_id_image) {
-          formData.append(
-            "back_id_image",
-            this.back_id_image,
-            this.back_id_image.name,
-          );
+        // 🔐 images validation
+        if (this.role === "seller") {
+          if (
+            !this.validateImage(this.front_id_image) ||
+            !this.validateImage(this.back_id_image)
+          ) {
+            this.massage = "الصور غير صالحة";
+            this.snackbar = true;
+            this.submitting = false;
+            return;
+          }
         }
-        console.log(this.front_id_image);
-        console.log(this.back_id_image);
-      }
-      try {
+
+        let formData = new FormData();
+        formData.append("name", this.name);
+        formData.append("last_name", this.last_name);
+        formData.append("email", this.email);
+        formData.append("password", this.password);
+        formData.append("latitude", this.latitude);
+        formData.append("longitude", this.longitude);
+        formData.append("security_question", this.security_question);
+        formData.append("security_answer", this.security_answer);
+        formData.append("terms_accepted", this.terms_accepted ? 1 : 0);
+        formData.append("role", this.role);
+
+        if (this.role === "seller") {
+          formData.append("wallet_number", this.wallet_number);
+
+          if (this.front_id_image) {
+            formData.append(
+              "front_id_image",
+              this.front_id_image,
+              this.front_id_image.name,
+            );
+          }
+
+          if (this.back_id_image) {
+            formData.append(
+              "back_id_image",
+              this.back_id_image,
+              this.back_id_image.name,
+            );
+          }
+        }
+
         const res = await axios.post(`${this.domin}register`, formData, {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
             "Content-Type": "multipart/form-data",
           },
         });
+
         this.massage = "تم التسجيل بنجاح";
         this.snackbar = true;
+
         localStorage.setItem("token", res.data.token);
         this.$router.push("/");
       } catch (err) {
-        console.error(err.response?.data || err);
-        this.massage = "حدث خطاء ما حاول تسجيل من مكان تاني";
+        console.error(err);
+        this.massage = "حدث خطأ";
         this.snackbar = true;
-        this.active = false;
+      } finally {
+        this.submitting = false;
       }
     },
+
+    // ================= REGISTER PHONE =================
+
     async registerPhone() {
+      if (this.submitting) return;
+      if (!this.canSubmit()) return;
+
       if (!this.latitude || !this.longitude) {
         this.showLocationAlert = true;
         return;
       }
-      this.active = true;
-      const token = localStorage.getItem("token");
-      let formData = new FormData();
-      formData.append("phone", this.phone);
-      formData.append("name", this.name);
-      formData.append("password", this.password);
-      formData.append("latitude", this.latitude);
-      formData.append("longitude", this.longitude);
-      formData.append("security_question", this.security_question);
-      formData.append("security_answer", this.security_answer);
-      formData.append("terms_accepted", this.terms_accepted ? 1 : 0);
-      formData.append("role", this.role);
-      if (this.role === "seller") {
-        formData.append("wallet_number", this.wallet_number);
 
-        if (this.front_id_image) {
-          formData.append(
-            "front_id_image",
-            this.front_id_image,
-            this.front_id_image.name,
-          );
-        }
+      this.submitting = true;
 
-        if (this.back_id_image) {
-          formData.append(
-            "back_id_image",
-            this.back_id_image,
-            this.back_id_image.name,
-          );
-        }
-        console.log(this.front_id_image);
-        console.log(this.back_id_image);
-      }
       try {
+        let formData = new FormData();
+        formData.append("phone", this.phone);
+        formData.append("name", this.name);
+        formData.append("password", this.password);
+        formData.append("latitude", this.latitude);
+        formData.append("longitude", this.longitude);
+        formData.append("security_question", this.security_question);
+        formData.append("security_answer", this.security_answer);
+        formData.append("terms_accepted", this.terms_accepted ? 1 : 0);
+        formData.append("role", this.role);
+
+        if (this.role === "seller") {
+          formData.append("wallet_number", this.wallet_number);
+
+          if (this.front_id_image) {
+            formData.append(
+              "front_id_image",
+              this.front_id_image,
+              this.front_id_image.name,
+            );
+          }
+
+          if (this.back_id_image) {
+            formData.append(
+              "back_id_image",
+              this.back_id_image,
+              this.back_id_image.name,
+            );
+          }
+        }
+
         const res = await axios.post(`${this.domin}register-phone`, formData, {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
             "Content-Type": "multipart/form-data",
           },
         });
+
         this.massage = "تم التسجيل بنجاح";
         this.snackbar = true;
+
         localStorage.setItem("token", res.data.token);
         this.$router.push("/");
       } catch (err) {
-        console.error(err.response?.data || err);
-        this.massage = "حدث خطاء ما حاول تسجيل من مكان تاني";
+        console.error(err);
+        this.massage = "حدث خطأ";
         this.snackbar = true;
-        this.active = false;
+      } finally {
+        this.submitting = false;
       }
     },
   },
