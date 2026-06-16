@@ -39,6 +39,7 @@ export const mystore = defineStore("mystore", {
     token: localStorage.getItem("token") || null,
     userinfo: "",
     Reviwes: "",
+    countReviws: "",
     PayRequst: "",
     AllRequst: "",
     sellersProfits: "",
@@ -125,7 +126,7 @@ export const mystore = defineStore("mystore", {
       const data = await res.json();
 
       this.Reviwes = data.Proreviwes.data; // الريفيوهات فقط
-
+      this.countReviws = data.total_reviews_count.date;
       this.reviewPagination = {
         current_page: data.Proreviwes.current_page,
         last_page: data.Proreviwes.last_page,

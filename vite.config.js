@@ -2,11 +2,15 @@ import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import path from "path";
 import history from "connect-history-api-fallback";
+import Sitemap from "vite-plugin-sitemap"; // تم إضافة الاستيراد هنا
 /*import viteImagemin from "vite-plugin-imagemin";*/
 
 export default defineConfig({
   plugins: [
     vue(),
+    Sitemap({
+      hostname: "https://yourwebsite.com", // ⚠️ لا تنسَ تغيير هذا الرابط برابط موقعك الحقيقي
+    }),
     {
       name: "spa-fallback",
       configureServer(server) {
@@ -15,7 +19,7 @@ export default defineConfig({
             disableDotRule: true,
             htmlAcceptHeaders: ["text/html", "application/xhtml+xml"],
             rewrites: [{ from: /\/.*/, to: "/index.html" }],
-          })
+          }),
         );
       },
     },

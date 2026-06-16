@@ -1,7 +1,6 @@
 <template>
   <div id="con2">
     <v-row>
-      <!-- العمود الأيسر: تفاصيل المنتجات -->
       <v-col cols="12" lg="6" md="6" sm="12" id="detilsechuck">
         <div style="display: flex; flex-flow: column; position: relative">
           <span class="text-h4">تفاصيل الطلب</span>
@@ -12,7 +11,6 @@
           </v-breadcrumbs>
         </div>
 
-        <!-- جدول عرض المنتجات -->
         <v-table>
           <thead>
             <tr>
@@ -41,14 +39,12 @@
           </tbody>
         </v-table>
 
-        <!-- المجموع الكلي -->
         <v-card outlined class="mt-3">
           <v-card-text class="text-h5">
             المجموع الكلي: {{ total.reduce((a, b) => a + b, 0) + shipping }}ج
           </v-card-text>
         </v-card>
       </v-col>
-      <!-- العمود الأيمن: نموذج الدفع وعمليات الدفع -->
       <v-col id="col2" cols="12" lg="6" md="6" sm="12">
         <v-row
           style="width: 100%; position: relative; left: 0"
@@ -59,13 +55,15 @@
 
         <br /><br />
 
-        <!-- اختيار طريقة الدفع -->
         <v-radio-group v-model="paymentMethod" required>
           <v-radio label="الدفع عند الاستلام" value="cod"></v-radio>
-          <v-radio label="الدفع الإلكتروني" value="online"></v-radio>
+          <v-radio
+            disabled="true"
+            label="الدفع الإلكتروني"
+            value="online"
+          ></v-radio>
         </v-radio-group>
 
-        <!-- نموذج الدفع الإلكتروني -->
         <div v-if="paymentMethod === 'online'">
           <v-row id="shiprow"><h4>عنوان الشحن</h4></v-row>
           <br /><br />
@@ -93,27 +91,21 @@
             </a>
           </v-btn>
 
-          <form
+          <v-form
             v-if="!payurl"
-            @submit.prevent="
-              funvaled(total.reduce((a, b) => a + b, 0) + this.shipping)
-            "
+            ref="onlineForm"
+            @submit.prevent="submitOnlineForm"
           >
             <v-row style="position: relative; left: 0">
               <v-col cols="12">
-                <input
-                  style="
-                    width: 100%;
-                    height: 50px;
-                    border: 1px solid black;
-                    border-radius: 5px;
-                    padding-left: 10px;
-                  "
+                <v-text-field
+                  outlined
+                  dense
+                  label="اسم المحل"
+                  v-model.trim="store"
+                  :rules="[(v) => !!v || 'اسم المحل مطلوب']"
                   required
-                  type="text"
-                  placeholder="اسم المحل"
-                  v-model="store"
-                />
+                ></v-text-field>
               </v-col>
               <v-col cols="12">
                 <v-select
@@ -124,6 +116,7 @@
                   label="اختر المحافظة"
                   outlined
                   dense
+                  :rules="[(v) => !!v || 'المحافظة مطلوبة']"
                   required
                 ></v-select>
                 <span v-if="province" style="margin-left: 10px">
@@ -138,43 +131,33 @@
                   outlined
                   dense
                   :disabled="!province"
+                  :rules="[(v) => !!v || 'المدينة مطلوبة']"
                   required
                 ></v-select>
               </v-col>
               <v-col cols="12">
-                <input
-                  style="
-                    width: 100%;
-                    height: 50px;
-                    border: 1px solid black;
-                    border-radius: 5px;
-                    padding-left: 10px;
-                  "
+                <v-text-field
+                  outlined
+                  dense
+                  label="الشارع"
+                  v-model.trim="street"
+                  :rules="[(v) => !!v || 'اسم الشارع مطلوب']"
                   required
-                  type="text"
-                  placeholder="الشارع"
-                  v-model="street"
-                />
+                ></v-text-field>
               </v-col>
               <v-col cols="12">
-                <input
-                  style="
-                    width: 100%;
-                    height: 50px;
-                    border: 1px solid black;
-                    border-radius: 5px;
-                    padding-left: 10px;
-                    direction: rtl;
-                  "
-                  required
+                <v-text-field
+                  outlined
+                  dense
                   type="tel"
-                  placeholder="رقم الهاتف للتواصل معك"
-                  v-model="phone_number"
+                  label="رقم الهاتف للتواصل معك"
+                  style="direction: rtl"
+                  v-model.trim="phone_number"
                   @input="debouncedValidate"
-                />
-                <p v-if="phoneError" style="color: red; font-size: 14px">
-                  {{ phoneError }}
-                </p>
+                  :error-messages="phoneError"
+                  :rules="[(v) => !!v || 'رقم الهاتف مطلوب']"
+                  required
+                ></v-text-field>
               </v-col>
 
               <v-col id="col2" cols="12" align-self="flex-end">
@@ -192,104 +175,94 @@
                 </v-btn>
               </v-col>
             </v-row>
-          </form>
+          </v-form>
         </div>
 
-        <!-- نموذج الدفع عند الاستلام -->
         <div v-if="paymentMethod === 'cod'">
           <v-row id="shiprow"><h4>عنوان الاستلام عند الدفع نقداً</h4></v-row>
           <br /><br />
-          <v-row style="position: relative; left: 0">
-            <v-col cols="12">
-              <input
-                style="
-                  width: 100%;
-                  height: 50px;
-                  border: 1px solid black;
-                  border-radius: 5px;
-                  padding-left: 10px;
-                "
-                required
-                type="text"
-                placeholder="اسم المحل"
-                v-model="store"
-              />
-            </v-col>
+          <v-form ref="codForm" @submit.prevent="submitCodForm">
+            <v-row style="position: relative; left: 0">
+              <v-col cols="12">
+                <v-text-field
+                  outlined
+                  dense
+                  label="اسم المحل"
+                  v-model.trim="store"
+                  :rules="[(v) => !!v || 'اسم المحل مطلوب']"
+                  required
+                ></v-text-field>
+              </v-col>
 
-            <v-col cols="12">
-              <v-select
-                v-model="province"
-                :items="governorates"
-                item-text="label"
-                item-value="value"
-                label="اختر المحافظة"
-                outlined
-                dense
-                required
-              ></v-select>
-              <span v-if="province" style="margin-left: 10px">
-                {{ governorates.find((g) => g.value === province)?.label }}
-              </span>
-            </v-col>
-            <v-col cols="12">
-              <v-select
-                v-model="city"
-                :items="cities[province] || []"
-                label="اختر المدينة"
-                outlined
-                dense
-                :disabled="!province"
-                required
-              ></v-select>
-            </v-col>
-            <v-col cols="12">
-              <input
-                style="
-                  width: 100%;
-                  height: 50px;
-                  border: 1px solid black;
-                  border-radius: 5px;
-                  padding-left: 10px;
-                "
-                required
-                type="text"
-                placeholder="الشارع"
-                v-model="street"
-              />
-            </v-col>
-            <v-col cols="12">
-              <input
-                style="
-                  width: 100%;
-                  height: 50px;
-                  border: 1px solid black;
-                  border-radius: 5px;
-                  padding-left: 10px;
-                  direction: rtl;
-                "
-                required
-                type="tel"
-                placeholder="رقم الهاتف للتواصل معك"
-                v-model="phone_number"
-                @input="debouncedValidate"
-              />
-              <p v-if="phoneError" style="color: red; font-size: 14px">
-                {{ phoneError }}
-              </p>
-            </v-col>
+              <v-col cols="12">
+                <v-select
+                  v-model="province"
+                  :items="governorates"
+                  item-text="label"
+                  item-value="value"
+                  label="اختر المحافظة"
+                  outlined
+                  dense
+                  :rules="[(v) => !!v || 'المحافظة مطلوبة']"
+                  required
+                ></v-select>
+                <span v-if="province" style="margin-left: 10px">
+                  {{ governorates.find((g) => g.value === province)?.label }}
+                </span>
+              </v-col>
+              <v-col cols="12">
+                <v-select
+                  v-model="city"
+                  :items="cities[province] || []"
+                  label="اختر المدينة"
+                  outlined
+                  dense
+                  :disabled="!province"
+                  :rules="[(v) => !!v || 'المدينة مطلوبة']"
+                  required
+                ></v-select>
+              </v-col>
+              <v-col cols="12">
+                <v-text-field
+                  outlined
+                  dense
+                  label="الشارع"
+                  v-model.trim="street"
+                  :rules="[(v) => !!v || 'اسم الشارع مطلوب']"
+                  required
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12">
+                <v-text-field
+                  outlined
+                  dense
+                  type="tel"
+                  label="رقم الهاتف للتواصل معك"
+                  style="direction: rtl"
+                  v-model.trim="phone_number"
+                  @input="debouncedValidate"
+                  :error-messages="phoneError"
+                  :rules="[(v) => !!v || 'رقم الهاتف مطلوب']"
+                  required
+                ></v-text-field>
+              </v-col>
 
-            <v-col cols="12" align-self="flex-end">
-              <v-btn
-                id="continuebtn2"
-                style="background-color: lightgreen; height: 60px; width: 200px"
-                prepend-icon="mdi-cart"
-                type="button"
-                @click="submitCOD(total.reduce((a, b) => a + b, 0) + shipping)"
-              >
-                تأكيد الطلب عند الاستلام
-              </v-btn>
-            </v-col>
-          </v-row>
+              <v-col cols="12" align-self="flex-end">
+                <v-btn
+                  id="continuebtn2"
+                  style="
+                    background-color: lightgreen;
+                    height: 60px;
+                    width: 200px;
+                  "
+                  prepend-icon="mdi-cart"
+                  type="submit"
+                >
+                  تأكيد الطلب عند الاستلام
+                </v-btn>
+              </v-col>
+            </v-row>
+          </v-form>
         </div>
       </v-col>
     </v-row>
@@ -367,8 +340,22 @@ export default {
       const regex = /^(010|011|012|015)[0-9]{8}$/;
       if (!regex.test(this.phone_number)) {
         this.phoneError = "دخل رقم صح عشان تعمل الطلبيه ";
+        return false;
       } else {
         this.phoneError = "";
+        return true;
+      }
+    },
+    async submitOnlineForm() {
+      const { valid } = await this.$refs.onlineForm.validate();
+      if (valid && this.validatePhone()) {
+        this.funvaled(this.total.reduce((a, b) => a + b, 0) + this.shipping);
+      }
+    },
+    async submitCodForm() {
+      const { valid } = await this.$refs.codForm.validate();
+      if (valid && this.validatePhone()) {
+        this.submitCOD(this.total.reduce((a, b) => a + b, 0) + this.shipping);
       }
     },
     funvaled(total) {

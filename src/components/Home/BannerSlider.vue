@@ -1,11 +1,11 @@
 <template>
   <div id="conb">
     <swiper
-      v-if="this.offers.length >= 1"
+      v-if="this.offersdata.length >= 1"
       :spaceBetween="30"
       :slides-per-view="1"
       :centeredSlides="false"
-      :loop="true"
+      :loop="offersdata && offersdata.length > 1"
       :autoplay="{
         delay: 6000,
       }"
@@ -23,7 +23,10 @@
           loading="lazy"
           :src="domin + item.banner"
           @click="
-            $router.push({ name: 'derilse', params: { idparam: item.id } })
+            $router.push({
+              name: 'derilse',
+              params: { idparam: item.product_id },
+            })
           "
         />
       </swiper-slide>
@@ -149,7 +152,6 @@ export default {
   },
   mounted: async function () {
     await this.Offers();
-    console.log(this.offersdata);
     window.setTimeout(function () {
       window.setInterval(function () {
         let mu = $(".swiper-slide-active");

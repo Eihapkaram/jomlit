@@ -1,7 +1,6 @@
 <template>
   <div>
     <v-card>
-      <!-- جدول عرض المنتجات -->
       <v-table>
         <thead>
           <tr>
@@ -30,7 +29,6 @@
         </tbody>
       </v-table>
 
-      <!-- المجموع الكلي -->
       <v-card outlined class="mt-3">
         <v-card-text class="text-h5">
           المجموع الكلي: {{ total.reduce((a, b) => a + b, 0) }}ج
@@ -43,7 +41,6 @@
     <v-card class="pa-6" elevation="3">
       <h2 class="mb-4">إنشاء طلب جديد</h2>
 
-      <!-- رسائل التنبيه -->
       <v-alert
         v-if="alert.show"
         :type="alert.type"
@@ -54,10 +51,12 @@
         {{ alert.message }}
       </v-alert>
 
-      <!-- نموذج إنشاء الطلب -->
-      <v-form ref="orderForm" @submit.prevent="order2" v-if="!createdOrder">
+      <v-form
+        ref="orderForm"
+        @submit.prevent="handleSubmit"
+        v-if="!createdOrder"
+      >
         <v-row>
-          <!-- اختيار العميل -->
           <v-col cols="12" md="6">
             <v-select
               v-model="form.user_id"
@@ -65,51 +64,61 @@
               item-title="name"
               item-value="id"
               label="اختر العميل"
+              :rules="[(v) => !!v || 'يجب اختيار العميل']"
               required
               :loading="loadingCustomers"
               clearable
             />
           </v-col>
 
-          <!-- ✅ المحافظة -->
           <v-col cols="12" md="6">
             <v-select
               v-model="form.governorate"
               :items="Object.keys(governorates)"
               label="المحافظة"
+              :rules="[(v) => !!v || 'المحافظة مطلوبة']"
               required
               @update:modelValue="form.city = ''"
             />
           </v-col>
 
-          <!-- ✅ المدينة (تظهر حسب المحافظة) -->
           <v-col cols="12" md="6">
             <v-select
               v-model="form.city"
               :items="governorates[form.governorate] || []"
               label="المدينة"
               :disabled="!form.governorate"
+              :rules="[(v) => !!v || 'المدينة مطلوبة']"
               required
             />
           </v-col>
 
-          <!-- الشارع ورقم الهاتف -->
           <v-col cols="12" md="6">
-            <v-text-field v-model="form.street" label="الشارع" required />
+            <v-text-field
+              v-model.trim="form.street"
+              label="الشارع"
+              :rules="[(v) => !!v || 'اسم الشارع مطلوب']"
+              required
+            />
           </v-col>
           <v-col cols="12" md="6">
             <v-text-field
-              v-model="form.phone"
-              label=" رقم تليفون العميل  "
+              v-model.trim="form.phone"
+              label="رقم تليفون العميل"
+              :rules="[
+                (v) => !!v || 'رقم الهاتف مطلوب',
+                (v) =>
+                  /^(010|011|012|015)[0-9]{8}$/.test(v) ||
+                  'برجاء إدخال رقم هاتف مصري صحيح مكون من 11 رقم',
+              ]"
               required
               hint="مثال: 010xxxxxxxx"
             />
           </v-col>
 
-          <!-- اسم المتجر وطريقة الدفع -->
           <v-col cols="12" md="6">
             <v-text-field
-              v-model="form.store_name"
+              v-model.trim="form.store_name"
               label="اسم المتجر (اختياري)"
             />
           </v-col>
@@ -118,16 +127,18 @@
               v-model="form.payment_method"
               :items="['cod']"
               label="طريقة الدفع"
+              :rules="[(v) => !!v || 'طريقة الدفع مطلوبة']"
+              required
               clearable
             />
           </v-col>
 
-          <!-- صورة المتجر -->
           <v-col cols="12">
             <v-file-input
               label="صورة المتجر (banner)"
               accept="image/*"
               prepend-icon="mdi-image"
+              :rules="[(v) => !!v || 'صورة المتجر مطلوبة']"
               required
               :show-size="true"
               :clearable="true"
@@ -135,7 +146,6 @@
             />
           </v-col>
 
-          <!-- معاينة الصورة -->
           <div v-if="previewImage" class="mt-2">
             <img
               :src="previewImage"
@@ -145,7 +155,6 @@
             />
           </div>
 
-          <!-- زر الإرسال -->
           <v-col cols="12" class="text-center">
             <v-btn color="primary" type="submit" :loading="loading">
               إنشاء الطلب
@@ -154,7 +163,6 @@
         </v-row>
       </v-form>
 
-      <!-- ✅ عرض تفاصيل الطلب بعد الإنشاء -->
       <div v-else>
         <h3 class="mt-6 mb-4 text-h5 text-center">تفاصيل الطلب الجديد</h3>
 
@@ -207,7 +215,6 @@
           </v-list>
         </v-card>
 
-        <!-- جدول المنتجات -->
         <v-table>
           <thead>
             <tr>
@@ -236,7 +243,6 @@
           </tbody>
         </v-table>
 
-        <!-- زر إنشاء طلب جديد -->
         <div class="text-center mt-6">
           <v-btn color="secondary" @click="resetForm">إنشاء طلب آخر</v-btn>
         </div>
@@ -320,7 +326,60 @@ export default {
       "delitemAll",
     ]),
     ...mapActions(mystore, ["Cart"]),
-    onFileChange(file) {
+
+    // 🔄 دالة ضغط وتصغير الصور داخلياً
+    compressImage(file, maxWidth = 1200, maxHeight = 1200, quality = 0.7) {
+      return new Promise((resolve, reject) => {
+        if (!file) return resolve(null);
+
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+          const img = new Image();
+          img.src = event.target.result;
+          img.onload = () => {
+            const canvas = document.createElement("canvas");
+            let width = img.width;
+            let height = img.height;
+
+            if (width > height) {
+              if (width > maxWidth) {
+                height = Math.round((height * maxWidth) / width);
+                width = maxWidth;
+              }
+            } else {
+              if (height > maxHeight) {
+                width = Math.round((width * maxHeight) / height);
+                height = maxHeight;
+              }
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, width, height);
+
+            canvas.toBlob(
+              (blob) => {
+                if (!blob) return reject(new Error("Canvas empty"));
+                const compressedFile = new File([blob], file.name, {
+                  type: file.type || "image/jpeg",
+                  lastModified: Date.now(),
+                });
+                resolve(compressedFile);
+              },
+              file.type || "image/jpeg",
+              quality
+            );
+          };
+          img.onload.onerror = (err) => reject(err);
+        };
+        reader.onerror = (err) => reject(err);
+      });
+    },
+
+    async onFileChange(file) {
       console.log("banner =>", file);
 
       if (!file) {
@@ -329,20 +388,40 @@ export default {
         return;
       }
 
-      // لو Array
+      let rawFile;
+      // لو Array (بعض مكونات الـ Vuetify القديمة أو الإعدادات الخاصة تعيد مصفوفة)
       if (Array.isArray(file)) {
-        this.form.store_banner = file[0];
+        rawFile = file[0];
       } else {
-        this.form.store_banner = file;
+        rawFile = file;
       }
 
-      // preview
+      // ⚡ تطبيق عملية الضغط فوراً قبل إضافتها للـ state
+      try {
+        const compressed = await this.compressImage(rawFile);
+        this.form.store_banner = compressed;
+      } catch (error) {
+        console.error("خطأ أثناء ضغط صورة المتجر:", error);
+        this.form.store_banner = rawFile; // حماية في حال فشل الضغط لأي سبب
+      }
+
+      // إنشاء رابط للمعاينة (Preview)
       this.previewImage = URL.createObjectURL(this.form.store_banner);
 
-      console.log("final file =>", this.form.store_banner);
+      console.log("final compressed file =>", this.form.store_banner);
+    },
+
+    async handleSubmit() {
+      const { valid } = await this.$refs.orderForm.validate();
+      if (valid) {
+        this.order2();
+      } else {
+        this.showAlert("error", "برجاء ملء الحقول المطلوبة بشكل صحيح");
+      }
     },
     async order2() {
       const token = localStorage.getItem("token");
+      this.loading = true;
 
       const formData = new FormData();
 
@@ -354,7 +433,7 @@ export default {
       formData.append("store_name", this.form.store_name || "");
       formData.append("payment_method", this.form.payment_method || "cod");
 
-      // ✅ الصورة
+      // ✅ الصورة المضغوطة
       if (this.form.store_banner instanceof File) {
         formData.append("store_banner", this.form.store_banner);
       }
@@ -390,6 +469,8 @@ export default {
         console.log(err.response?.data || err);
 
         this.showAlert("error", "تأكد من إدخال البيانات بشكل صحيح");
+      } finally {
+        this.loading = false;
       }
     },
     fun() {
@@ -439,6 +520,7 @@ export default {
   },
 };
 </script>
+
 
 <style scoped>
 .pa-6 {

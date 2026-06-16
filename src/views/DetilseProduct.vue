@@ -75,9 +75,7 @@
                   color="amber"
                   class="mr-2"
                 />
-                <span class="text-grey"
-                  >({{ this.Reviwes.length }} تقييم )</span
-                >
+                <span class="text-grey">({{ this.countReviws }} تقييم )</span>
               </div>
 
               <v-card-text class="mb-3 desc-text">
@@ -199,151 +197,199 @@
             </v-card>
           </div>
 
-          <!-- المراجعات -->
-          <div id="revews">
-            <v-divider class="mb-4"></v-divider>
-
-            <v-card-title
-              style="
-                font-weight: bold;
-                font-size: 22px;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                color: #2c3e50;
-              "
-            >
-              <v-icon color="amber" size="26"
-                >mdi-comment-multiple-outline</v-icon
-              >
-              آراء العملاء
-            </v-card-title>
-
-            <v-list-item style="width: 100%">
-              <span
-                style="display: flex"
-                class="mt-2 text-denger"
-                v-if="this.Reviwes.length < 1"
-              >
-                <h3 style="color: black; font-size: bold">
-                  لا تتوفر مراجعات لهذا المنتج
-                  <v-icon color="amber" size="26"
-                    >mdi-comment-multiple-outline</v-icon
-                  >
-                </h3>
-              </span>
-              <transition-group name="fade" tag="div" style="width: 100%">
-                <v-card
-                  v-for="(rev, i) in this.Reviwes"
-                  :key="i"
-                  elevation="2"
-                  style="
-                    display: flex;
-                    align-items: flex-start;
-                    gap: 15px;
-                    background-color: #fff;
-                    border-radius: 12px;
-                    padding: 15px 20px;
-                    margin-bottom: 12px;
-                    transition: 0.3s;
-                  "
-                  @mouseover="
-                    (event) =>
-                      (event.currentTarget.style.boxShadow =
-                        '0 4px 12px rgba(0,0,0,0.1)')
-                  "
-                  @mouseleave="
-                    (event) => (event.currentTarget.style.boxShadow = '')
-                  "
+          <!-- حاوية المراجعات -->
+          <div class="reviews-section-container">
+            <div class="reviews-header-block">
+              <div class="d-flex align-center gap-2">
+                <v-icon color="green-darken-2" size="28"
+                  >mdi-forum-outline</v-icon
                 >
-                  <v-avatar
-                    v-if="rev.user.img !== 'null'"
-                    :image="domin + rev.user.img"
-                    size="48"
-                  ></v-avatar>
+                <span class="header-title-text">آراء وتقييمات العملاء</span>
+              </div>
+              <v-chip
+                color="green-lighten-5"
+                text-color="green-darken-3"
+                class="font-weight-bold"
+                size="small"
+              >
+                {{ this.Reviwes.length }} مراجعة
+              </v-chip>
+            </div>
 
-                  <v-avatar
-                    v-if="rev.user.img == 'null'"
-                    color="grey-lighten-3"
-                    size="48"
+            <!-- قائمة عرض التعليقات -->
+            <div id="revews" class="reviews-scroll-area">
+              <v-list-item class="pa-0 w-100">
+                <div class="no-reviews-fallback" v-if="this.Reviwes.length < 1">
+                  <v-icon color="grey-lighten-1" size="44" class="mb-2"
+                    >mdi-message-draw</v-icon
                   >
-                    <v-icon color="grey">mdi-account</v-icon>
-                  </v-avatar>
-
-                  <div
-                    style="display: flex; flex-direction: column; width: 100%"
-                  >
-                    <v-card-subtitle
-                      style="font-weight: 600; color: #34495e; font-size: 15px"
-                    >
-                      {{ rev.user.name }} {{ rev.user.last_name }}
-                      <span style="color: #888; font-size: 13px">يقول:</span>
-                    </v-card-subtitle>
-
-                    <v-card-text
-                      style="
-                        background-color: #f9f9f9;
-                        border-radius: 10px;
-                        padding: 10px 12px;
-                        font-size: 14.5px;
-                        color: #333;
-                        line-height: 1.6;
-                        border: 1px solid #eee;
-                      "
-                    >
-                      {{ rev.comment }}
-                    </v-card-text>
+                  <div class="text-subtitle-1 font-weight-bold text-slate-700">
+                    لا توجد مراجعات بعد
                   </div>
-                </v-card>
-              </transition-group>
-            </v-list-item>
-          </div>
-          <form
-            @submit.prevent="funvaledcom(this.$route.params.idparam)"
-            style="
-              background-color: #fff;
-              padding: 20px;
-              border-radius: 14px;
-              margin-top: 10px;
-              border: 1px solid #eee;
-              box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
-              width: 100%;
-            "
-          >
-            <v-text-field
-              counter
-              width="90%"
-              style="
-                position: relative;
-                left: -20px;
-                background-color: #fafafa;
-                border-radius: 10px;
-              "
-              placeholder="أدخل تعليقك هنا..."
-              name="revewe"
-              v-model="reveiwe"
-              variant="outlined"
-              color="amber"
-            ></v-text-field>
+                  <div class="text-caption text-grey">
+                    شاركنا رأيك وكن أول من يكتب مراجعة لهذا المنتج!
+                  </div>
+                </div>
 
-            <v-btn
-              type="submit"
-              color="amber"
-              rounded
-              class="text-white"
-              style="
-                font-weight: bold;
-                font-size: 15px;
-                margin-top: 8px;
-                padding: 10px 25px;
-              "
-            >
-              <v-icon left>mdi-send</v-icon> نشر
-            </v-btn>
-          </form>
+                <transition-group name="fade" tag="div" class="w-100">
+                  <div
+                    v-for="(rev, i) in this.Reviwes"
+                    :key="i"
+                    class="review-modern-card"
+                  >
+                    <v-avatar
+                      v-if="rev.user.img !== 'null'"
+                      :image="domin + rev.user.img"
+                      size="44"
+                      class="review-user-avatar elevation-1"
+                    ></v-avatar>
+
+                    <v-avatar
+                      v-if="rev.user.img == 'null'"
+                      color="green-lighten-5"
+                      size="44"
+                      class="review-user-avatar"
+                    >
+                      <v-icon color="green-darken-2" size="20"
+                        >mdi-account</v-icon
+                      >
+                    </v-avatar>
+
+                    <div class="review-body-content">
+                      <div class="review-top-meta">
+                        <span class="user-fullname">
+                          {{ rev.user.name }} {{ rev.user.last_name }}
+                        </span>
+
+                        <div class="review-action-group">
+                          <v-btn
+                            icon
+                            variant="text"
+                            size="x-small"
+                            color="blue-darken-1"
+                            class="control-action-btn"
+                            @click="openEditDialog(rev)"
+                          >
+                            <v-icon size="16">mdi-pencil-outline</v-icon>
+                            <v-tooltip activator="parent" location="top"
+                              >تعديل</v-tooltip
+                            >
+                          </v-btn>
+                          <v-btn
+                            icon
+                            variant="text"
+                            size="x-small"
+                            color="red-lighten-1"
+                            class="control-action-btn"
+                            @click="deleteReview(rev.id)"
+                          >
+                            <v-icon size="16">mdi-delete-outline</v-icon>
+                            <v-tooltip activator="parent" location="top"
+                              >حذف</v-tooltip
+                            >
+                          </v-btn>
+                        </div>
+                      </div>
+
+                      <div class="review-speech-bubble">
+                        {{ rev.comment }}
+                      </div>
+                    </div>
+                  </div>
+                </transition-group>
+              </v-list-item>
+            </div>
+
+            <!-- فورم إضافة مراجعة جديدة -->
+            <div class="add-review-form-card">
+              <div class="form-title-mini">
+                <v-icon size="18" color="green" class="ml-1"
+                  >mdi-plus-circle-outline</v-icon
+                >
+                أضف مراجعتك الخاصة
+              </div>
+              <form @submit.prevent="funvaledcom(this.$route.params.idparam)">
+                <v-textarea
+                  counter="500"
+                  maxlength="500"
+                  :rules="[(v) => !!v.trim() || 'لا يمكن نشر تعليق فارغ']"
+                  placeholder="اكتب رأيك وتجربتك مع المنتج بكل أمانة هنا..."
+                  name="revewe"
+                  v-model="reveiwe"
+                  variant="outlined"
+                  color="green-darken-1"
+                  rows="3"
+                  no-resize
+                  bg-color="grey-keep-light"
+                  class="modern-textarea"
+                  hide-details="auto"
+                ></v-textarea>
+
+                <div class="d-flex justify-end mt-3">
+                  <v-btn
+                    type="submit"
+                    color="green-darken-2"
+                    rounded
+                    :disabled="!reveiwe.trim()"
+                    class="text-white px-6 elevation-1 font-weight-bold"
+                    height="42"
+                  >
+                    <v-icon left class="ml-1" size="18"
+                      >mdi-send-outline</v-icon
+                    >
+                    نشر مراجعتي
+                  </v-btn>
+                </div>
+              </form>
+            </div>
+          </div>
         </v-col>
       </v-row>
     </div>
+
+    <!-- الـ Popup الخاص بتعديل المراجعة -->
+    <v-dialog v-model="editDialog" max-width="500px" persistent>
+      <v-card class="rounded-xl pa-4" dir="rtl">
+        <v-card-title class="text-h6 font-weight-bold mb-2">
+          <v-icon color="blue-darken-1" class="ml-2">mdi-pencil-outline</v-icon>
+          تعديل التعليق
+        </v-card-title>
+        <v-card-text>
+          <v-textarea
+            v-model="selectedReviewComment"
+            placeholder="اكتب تعليقك الجديد هنا..."
+            variant="outlined"
+            color="green"
+            rows="4"
+            no-resize
+            counter="500"
+            maxlength="500"
+            :rules="[(v) => !!v.trim() || 'لا يمكن ترك التعليق فارغاً']"
+          ></v-textarea>
+        </v-card-text>
+        <v-card-actions class="justify-end gap-2">
+          <v-btn
+            color="grey-darken-1"
+            variant="text"
+            rounded
+            @click="editDialog = false"
+          >
+            إلغاء
+          </v-btn>
+          <v-btn
+            color="green-darken-2"
+            variant="flat"
+            class="text-white px-4"
+            rounded
+            :disabled="!selectedReviewComment.trim()"
+            :loading="loadingUpdate"
+            @click="updateReview"
+          >
+            حفظ التعديل
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-lazy>
 </template>
 
@@ -376,6 +422,11 @@ export default {
       reviewPage: 1,
       loadingReviews: false,
       reviewPagination: null,
+
+      editDialog: false,
+      selectedReviewId: null,
+      selectedReviewComment: "",
+      loadingUpdate: false,
     };
   },
   setup() {
@@ -383,14 +434,15 @@ export default {
       modules: [Navigation, Mousewheel, Keyboard, Scrollbar],
     };
   },
-  computed: { ...mapState(mystore, ["SingleProduct", "Reviwes", "domin"]) },
+  computed: {
+    ...mapState(mystore, ["SingleProduct", "Reviwes", "domin", "countReviws"]),
+  },
   watch: {
     SingleProduct: {
       immediate: true,
       deep: true,
       handler(newVal) {
         if (newVal && newVal.img) {
-          // 👇 نرجع للصورة الأساسية بتاعة المنتج الجديد
           this.tab = null;
           const bigImg = document.querySelector("#big-img");
           if (bigImg) bigImg.src = this.domin + newVal.img;
@@ -431,6 +483,8 @@ export default {
       }
     },
     funvaledcom(id) {
+      if (!this.reveiwe.trim()) return;
+
       if (localStorage.getItem("token")) {
         this.Addrev(id);
       } else {
@@ -440,19 +494,65 @@ export default {
     },
     async Addrev(id) {
       const token = localStorage.getItem("token");
+      const cleanComment = this.reveiwe.trim();
       try {
         const res = await axios.post(
           `${this.domin}add/reviweForProdict/${id}`,
-          { comment: this.reveiwe },
+          { comment: cleanComment },
           { headers: { Authorization: `Bearer ${token}` } },
         );
         console.log("تم إضافة المراجعة:", res.data);
       } catch (err) {
         console.error(err.response?.data || err);
       }
+
       await this.getReviwes(this.$route.params.idparam);
+      this.reveiwe = "";
       this.reviewPage = 1;
+
+      // تحريك الاسكرول تلقائياً لأسفل صندوق التعليقات
+      this.$nextTick(() => {
+        const reviewsBox = document.querySelector("#revews");
+        if (reviewsBox) {
+          reviewsBox.scrollTo({
+            top: reviewsBox.scrollHeight,
+            behavior: "smooth",
+          });
+        }
+      });
     },
+
+    openEditDialog(review) {
+      this.selectedReviewId = review.id;
+      this.selectedReviewComment = review.comment;
+      this.editDialog = true;
+    },
+
+    async updateReview() {
+      if (!this.selectedReviewComment.trim()) return;
+
+      const token = localStorage.getItem("token");
+      this.loadingUpdate = true;
+      try {
+        const res = await axios.post(
+          `${this.domin}update/reviwe/${this.selectedReviewId}`,
+          { comment: this.selectedReviewComment.trim() },
+          { headers: { Authorization: `Bearer ${token}` } },
+        );
+        console.log("تم تعديل المراجعة:", res.data);
+        await this.getReviwes(this.$route.params.idparam);
+        this.editDialog = false;
+      } catch (err) {
+        console.error("خطأ أثناء التعديل:", err.response?.data || err);
+      } finally {
+        this.loadingUpdate = false;
+      }
+    },
+
+    deleteReview(reviewId) {
+      console.log("حذف المراجعة ذات الرقم:", reviewId);
+    },
+
     Addtolist(item) {
       this.SingleProduct.quantity = this.quint;
       this.AdditemL(item);
@@ -476,23 +576,18 @@ export default {
       }
 
       this.loadingReviews = true;
-
       this.reviewPage++;
 
       const res = await fetch(
         `${this.domin}show/reviwe/${this.$route.params.idparam}?page=${this.reviewPage}`,
       );
-
       const data = await res.json();
-
       this.Reviwes.push(...data.Proreviwes.data);
-
       this.loadingReviews = false;
     },
 
     initReviewScroll() {
       const reviewsBox = document.querySelector("#revews");
-
       if (!reviewsBox) return;
 
       reviewsBox.addEventListener("scroll", async () => {
@@ -531,6 +626,125 @@ export default {
 </script>
 
 <style scoped>
+.reviews-section-container {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 24px;
+  margin-top: 35px;
+  box-shadow: 0 4px 20px rgba(148, 163, 184, 0.06);
+}
+.reviews-header-block {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #f1f5f9;
+  padding-bottom: 16px;
+  margin-bottom: 20px;
+}
+.header-title-text {
+  font-weight: 700;
+  font-size: 20px;
+  color: #1e293b;
+}
+.reviews-scroll-area {
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: 4px;
+  margin-bottom: 24px;
+}
+.no-reviews-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 40px 16px;
+}
+.review-modern-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background-color: #ffffff;
+  border: 1px solid #f1f5f9;
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 14px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.review-modern-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.03);
+  border-color: #cbd5e1;
+}
+.review-user-avatar {
+  border: 2px solid #f1f5f9;
+  flex-shrink: 0;
+}
+.review-body-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+.review-top-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.user-fullname {
+  font-weight: 600;
+  color: #334155;
+  font-size: 14.5px;
+}
+.review-action-group {
+  display: flex;
+  gap: 4px;
+}
+.control-action-btn {
+  background-color: #f8fafc;
+  border-radius: 8px !important;
+}
+.control-action-btn:hover {
+  background-color: #f1f5f9;
+}
+.review-speech-bubble {
+  background-color: #f8fafc;
+  color: #475569;
+  font-size: 14px;
+  line-height: 1.6;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #f1f5f9;
+  word-break: break-word;
+}
+.add-review-form-card {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 20px;
+}
+.form-title-mini {
+  font-weight: 600;
+  font-size: 15px;
+  color: #334155;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+}
+.modern-textarea :deep(.v-field) {
+  border-radius: 12px !important;
+  background-color: #ffffff !important;
+}
+.reviews-scroll-area::-webkit-scrollbar {
+  width: 5px;
+}
+.reviews-scroll-area::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 10px;
+}
+.reviews-scroll-area::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;
+}
 #big-img {
   height: 400px;
   border-radius: 20px;
@@ -565,50 +779,16 @@ export default {
   box-shadow: 0 8px 24px rgba(85, 139, 47, 0.2);
   transform: translateY(-3px);
 }
-
 .green-text {
   color: #388e3c !important;
 }
-
 .text-grey {
   color: #9e9e9e;
 }
-
-.product-gallery {
-  background-color: #f4f8f4;
-  padding: 15px;
-  border-radius: 16px;
-}
-
-.main-image {
-  border-radius: 14px;
-  object-fit: cover;
-  width: 100%;
-  box-shadow: 0 4px 10px rgba(56, 142, 60, 0.25);
-}
-
-.gallery-card {
-  background-color: #f0f9f0;
-  border-radius: 10px;
-  transition: all 0.3s ease;
-  overflow: hidden;
-  border: 1px solid #cde7c7;
-}
-.gallery-card:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 12px rgba(85, 139, 47, 0.3);
-}
-.gallery-thumb {
-  width: 100%;
-  height: 100px;
-  object-fit: cover;
-}
-
 .desc-text {
   color: #4e5d4b;
   line-height: 1.7;
 }
-
 .quantity-control {
   display: flex;
   align-items: center;
@@ -628,7 +808,6 @@ export default {
   transform: scale(1.1);
   transition: 0.25s;
 }
-
 .fade-enter-active,
 .fade-leave-active {
   transition: all 0.3s ease;
@@ -643,10 +822,6 @@ export default {
   text-align: right;
   position: relative;
   top: 50px;
-}
-#titl {
-  font-weight: bold;
-  color: #222;
 }
 #btnadd {
   border-radius: 30px;
@@ -667,9 +842,6 @@ export default {
   width: 150px;
   height: 50px;
 }
-#titl {
-  font-weight: bold;
-}
 #ditealtdiv {
   justify-content: flex-start;
 }
@@ -680,24 +852,11 @@ export default {
   margin-left: 10px;
   transition: all, 2s;
 }
-#btnadd {
-  border-radius: 30px;
-  height: 50px;
-  width: 500px;
-}
 #qointcon {
   display: flex;
   flex-flow: column;
   position: relative;
   left: -280px;
-}
-#qountbtn {
-  position: relative;
-  height: 50px;
-  left: 0px;
-  border-radius: 30px;
-  border: 2px solid black;
-  width: 150px;
 }
 #plus {
   position: relative;
@@ -708,33 +867,6 @@ export default {
   position: relative;
   left: 40px;
   z-index: 3;
-}
-#revews {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start; /* 👈 يبدأ من فوق */
-  align-items: stretch;
-  align-content: center;
-  padding: 20px;
-  background-color: #fafafa;
-  border-radius: 16px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-  margin-top: 30px;
-  height: 500px;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: #cfcfcf #fafafa;
-}
-
-#revews::-webkit-scrollbar {
-  width: 6px;
-}
-#revews::-webkit-scrollbar-thumb {
-  background-color: #bbb;
-  border-radius: 10px;
-}
-#revews::-webkit-scrollbar-thumb:hover {
-  background-color: #888;
 }
 #avol {
   position: absolute;
@@ -750,7 +882,6 @@ export default {
   background-color: lightcoral;
 }
 
-/* Tablet */
 @media (max-width: 991px) {
   #plus {
     position: relative;
@@ -768,10 +899,8 @@ export default {
     top: -200px;
   }
   .food-card {
-    background: linear-gradient(160deg, #ffffff, #f8fdf8);
     border: 1px solid #d6eadf;
     left: 20px;
-    transition: all 0.3s ease;
     width: 100%;
   }
   #con2 {
@@ -785,14 +914,12 @@ export default {
   }
   #my-galleryimg {
     width: 100px;
-    height: fit-content;
     max-height: 150px;
   }
   #btnadd {
     border-radius: 30px;
     height: 50px;
     width: 250px;
-    margin-left: 0px;
   }
   #qointcon {
     display: flex;
@@ -801,31 +928,15 @@ export default {
     position: relative;
     left: -5px;
   }
-  #listicon {
-    border-radius: 50px;
-    position: relative;
-    top: -6px;
-    margin-left: 3px;
-    transition: all, 2s;
-  }
   #zcon {
     width: 90%;
-    position: relative;
     top: 20px;
   }
   #big-img {
     border-radius: 20px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
     position: relative;
     left: -40px;
     max-width: 350px;
-  }
-  #listicon {
-    border-radius: 50px;
-    position: relative;
-    top: -6px;
-    margin-left: 5px;
-    transition: all, 2s;
   }
   #tabslide {
     width: 400px;
@@ -834,17 +945,11 @@ export default {
     position: absolute;
     top: 160px;
     left: -40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    z-index: 5;
     width: 100%;
     height: 50px;
     background-color: lightcoral;
   }
 }
-/* Mobile */
 @media (max-width: 500px) {
   #plus {
     position: relative;
@@ -860,11 +965,6 @@ export default {
     position: absolute;
     top: 147px;
     left: -27px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    z-index: 5;
     width: 100%;
     height: 50px;
     background-color: lightcoral;
@@ -875,9 +975,6 @@ export default {
     top: -200px;
   }
   .food-card {
-    background: linear-gradient(160deg, #ffffff, #f8fdf8);
-    border: 1px solid #d6eadf;
-    transition: all 0.3s ease;
     width: 110%;
   }
   #con2 {
@@ -891,14 +988,12 @@ export default {
   }
   #my-galleryimg {
     width: 80px;
-    height: fit-content;
     max-height: 150px;
   }
   #btnadd {
     border-radius: 30px;
     height: 50px;
     width: 230px;
-    margin-left: 0px;
   }
   #qointcon {
     display: flex;
@@ -907,32 +1002,15 @@ export default {
     position: relative;
     left: -5px;
   }
-  #listicon {
-    border-radius: 50px;
-    position: relative;
-    top: -6px;
-    margin-left: 3px;
-    transition: all, 2s;
-  }
   #zcon {
     width: 90%;
-    position: relative;
     top: 20px;
   }
   #big-img {
     border-radius: 20px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
     position: relative;
     left: -25px;
     max-width: 300px;
-    height: fit-content;
-  }
-  #listicon {
-    border-radius: 50px;
-    position: relative;
-    top: -6px;
-    margin-left: 5px;
-    transition: all, 2s;
   }
   #tabslide {
     width: 400px;

@@ -5,7 +5,6 @@
         {{ showPhoneForm ? "إنشاء حساب جديد برقمك" : "إنشاء حساب جديد" }}
       </h2>
 
-      <!-- زر طلب الموقع -->
       <v-btn
         color="primary"
         class="mb-4"
@@ -18,7 +17,6 @@
         الموقع مفعل: {{ latitude.toFixed(5) }}, {{ longitude.toFixed(5) }}
       </p>
 
-      <!-- نموذج تسجيل الدخول / التسجيل برقم الهاتف -->
       <form v-if="showPhoneForm" @submit.prevent="registerPhone">
         <v-text-field
           v-model="name"
@@ -46,7 +44,6 @@
           class="mb-6"
         />
 
-        <!-- السؤال الأمني -->
         <v-text-field
           v-model="security_question"
           label="السوال الامني لاسترداد الحساب"
@@ -62,7 +59,6 @@
           class="mb-4"
         />
 
-        <!-- اختيار الدور -->
         <v-select
           v-model="role"
           :items="[
@@ -78,7 +74,6 @@
           item-value="value"
         />
 
-        <!-- حقول المندوب تظهر فقط لو الدور seller -->
         <template v-if="role === 'seller'">
           <v-text-field
             v-model="wallet_number"
@@ -137,7 +132,6 @@
         </div>
       </form>
 
-      <!-- نموذج إنشاء حساب جديد -->
       <form v-else @submit.prevent="funregister">
         <v-text-field
           v-model="name"
@@ -173,7 +167,6 @@
           class="mb-6"
         />
 
-        <!-- السؤال الأمني -->
         <v-text-field
           v-model="security_question"
           label="السوال الامني لاسترداد الحساب"
@@ -189,7 +182,6 @@
           class="mb-4"
         />
 
-        <!-- اختيار الدور -->
         <v-select
           v-model="role"
           :items="[
@@ -205,7 +197,6 @@
           item-value="value"
         />
 
-        <!-- حقول المندوب تظهر فقط لو الدور seller -->
         <template v-if="role === 'seller'">
           <v-text-field
             v-model="wallet_number"
@@ -269,7 +260,6 @@
       </v-alert>
     </v-card>
 
-    <!-- ✅ تنبيه عند الإرسال -->
     <v-snackbar v-model="snackbar" timeout="4000" color="darkgold" top>
       {{ massage }}
     </v-snackbar>
@@ -339,21 +329,96 @@ export default {
       if (!file) return true;
 
       const allowed = ["image/jpeg", "image/png", "image/webp"];
-      const maxSize = 3 * 1024 * 1024; // 3MB
+      // تم رفع الحد لـ 12 ميجابايت لاستقبال الملفات الكبيرة قبل عملية التصغير والضغط
+      const maxSize = 12 * 1024 * 1024;
 
       return allowed.includes(file.type) && file.size <= maxSize;
     },
 
-    // ================= FILE HANDLING =================
+    // دالة مخصصة لضغط وتصغير حجم الصور تلقائياً
+    compressImage(file, maxWidth = 1200, maxHeight = 1200, quality = 0.7) {
+      return new Promise((resolve, reject) => {
+        if (!file) return resolve(null);
 
-    onFileChange(event) {
-      this.front_id_image =
-        event?.target?.files?.[0] || event?.[0] || event || null;
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+          const img = new Image();
+          img.src = event.target.result;
+          img.onload = () => {
+            const canvas = document.createElement("canvas");
+            let width = img.width;
+            let height = img.height;
+
+            // حساب الأبعاد الجديدة للمحافظة على نسبة العرض إلى الارتفاع (Aspect Ratio)
+            if (width > height) {
+              if (width > maxWidth) {
+                height = Math.round((height * maxWidth) / width);
+                width = maxWidth;
+              }
+            } else {
+              if (height > maxHeight) {
+                width = Math.round((width * maxHeight) / height);
+                height = maxHeight;
+              }
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, width, height);
+
+            // تحويل الـ Canvas إلى ملف (Blob) بنفس الاسم والنوع الأصلي
+            canvas.toBlob(
+              (blob) => {
+                if (!blob) return reject(new Error("Canvas is empty"));
+                const compressedFile = new File([blob], file.name, {
+                  type: file.type || "image/jpeg",
+                  lastModified: Date.now(),
+                });
+                resolve(compressedFile);
+              },
+              file.type || "image/jpeg",
+              quality, // نسبة الجودة (0.7 تعني 70% وهي ممتازة جداً وتقلل الحجم حتى 90%)
+            );
+          };
+          img.onerror = (err) => reject(err);
+        };
+        reader.onerror = (err) => reject(err);
+      });
     },
 
-    onFileChange2(event) {
-      this.back_id_image =
-        event?.target?.files?.[0] || event?.[0] || event || null;
+    // ================= FILE HANDLING =================
+
+    async onFileChange(event) {
+      const file = event?.target?.files?.[0] || event?.[0] || event || null;
+      if (file && this.validateImage(file)) {
+        try {
+          // تصغير وضغط الصورة الأمامية للبطاقة قبل حفظها في الـ State
+          this.front_id_image = await this.compressImage(file);
+        } catch (error) {
+          console.error("خطأ أثناء ضغط الصورة الأولى:", error);
+          this.front_id_image = file; // fallback في حال حدوث مشكلة غير متوقعة
+        }
+      } else {
+        this.front_id_image = null;
+      }
+    },
+
+    async onFileChange2(event) {
+      const file = event?.target?.files?.[0] || event?.[0] || event || null;
+      if (file && this.validateImage(file)) {
+        try {
+          // تصغير وضغط الصورة الخلفية للبطاقة قبل حفظها في الـ State
+          this.back_id_image = await this.compressImage(file);
+        } catch (error) {
+          console.error("خطأ أثناء ضغط الصورة الثانية:", error);
+          this.back_id_image = file; // fallback
+        }
+      } else {
+        this.back_id_image = null;
+      }
     },
 
     // ================= LOCATION =================
@@ -459,7 +524,7 @@ export default {
         this.snackbar = true;
 
         localStorage.setItem("token", res.data.token);
-        this.$router.push("/");
+        this.$router.push("/login");
       } catch (err) {
         console.error(err);
         this.massage = "حدث خطأ";
@@ -525,7 +590,7 @@ export default {
         this.snackbar = true;
 
         localStorage.setItem("token", res.data.token);
-        this.$router.push("/");
+        this.$router.push("/login");
       } catch (err) {
         console.error(err);
         this.massage = "حدث خطأ";

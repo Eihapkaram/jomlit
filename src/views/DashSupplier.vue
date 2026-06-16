@@ -105,6 +105,7 @@
             <v-btn
               color="primary"
               variant="outlined"
+              v-if="pdf"
               @click="downloadPdf(order.id)"
             >
               تحميل PDF
@@ -145,7 +146,7 @@ export default {
       rejectDialog: false,
       rejectReason: "",
       selectedOrder: null,
-
+      pdf: false,
       alert: {
         show: false,
         type: "success",
