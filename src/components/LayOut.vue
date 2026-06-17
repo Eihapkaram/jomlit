@@ -11,11 +11,20 @@
         <v-col cols="9" class="d-flex align-center">
           <v-avatar
             size="50"
-            class="me-3"
-            :image="userinfo.img ? domin + userinfo.img : null"
-            style="border: 2px solid #1976d2; background: #e3f2fd"
+            class="me-3 border-md"
+            color="blue-lighten-5"
+            style="border-color: #1976d2 !important"
           >
-            <v-icon size="36" color="#1976d2">mdi-account-circle</v-icon>
+            <!-- إذا كانت الصورة موجودة، اعرضها -->
+            <v-img
+              v-if="userinfo.img != 'null'"
+              :src="domin + userinfo.img"
+              alt="User Avatar"
+              cover
+            ></v-img>
+
+            <!-- الشكل الافتراضي في حال عدم وجود صورة -->
+            <v-icon v-else size="32" color="primary">mdi-account</v-icon>
           </v-avatar>
           <div>
             <h4 style="margin: 0; font-weight: 600; color: #1976d2">
@@ -220,11 +229,20 @@
         <v-col cols="9" class="d-flex align-center">
           <v-avatar
             size="50"
-            class="me-3"
-            :image="userinfo.img ? domin + userinfo.img : null"
-            style="border: 2px solid #1976d2; background: #e3f2fd"
+            class="me-3 border-md"
+            color="blue-lighten-5"
+            style="border-color: #1976d2 !important"
           >
-            <v-icon size="36" color="#1976d2">mdi-account-circle</v-icon>
+            <!-- إذا كانت الصورة موجودة، اعرضها -->
+            <v-img
+              v-if="userinfo.img != 'null'"
+              :src="domin + userinfo.img"
+              alt="User Avatar"
+              cover
+            ></v-img>
+
+            <!-- الشكل الافتراضي في حال عدم وجود صورة -->
+            <v-icon v-else size="32" color="primary">mdi-account</v-icon>
           </v-avatar>
           <div>
             <h4 style="margin: 0; font-weight: 600; color: #1976d2">

@@ -99,7 +99,7 @@
               color="primary"
               @click="updateOrderStatus(order.id, 'ready')"
             >
-              الطلب جاهز
+              الطلب جاهز للتسليم
             </v-btn>
             <!-- PDF -->
             <v-btn

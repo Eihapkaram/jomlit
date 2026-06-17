@@ -2,7 +2,6 @@
   <v-container class="py-8" dir="rtl">
     <v-row justify="center">
       <v-col cols="12" md="8">
-        <!-- ✅ كارت بيانات البائع -->
         <v-card class="rounded-xl shadow-sm border" elevation="4">
           <v-card-title class="d-flex align-center justify-space-between">
             <div class="d-flex align-center gap-3">
@@ -42,7 +41,6 @@
           <v-divider />
 
           <v-card-text>
-            <!-- ✅ رفع الصورة -->
             <div class="mb-4 text-center">
               <v-btn
                 color="amber-darken-3"
@@ -62,7 +60,6 @@
               />
             </div>
 
-            <!-- ✅ معلومات المستخدم -->
             <v-row dense>
               <v-col cols="6">
                 <div class="d-flex justify-space-between py-1">
@@ -80,7 +77,6 @@
 
             <v-divider class="my-4" />
 
-            <!-- ✅ الإحصائيات -->
             <v-row dense>
               <v-col cols="12" sm="4" v-for="(stat, i) in stats" :key="i">
                 <v-card
@@ -96,7 +92,6 @@
               </v-col>
             </v-row>
 
-            <!-- ✅ مؤشر الإنجاز -->
             <div class="mt-6">
               <div class="d-flex justify-space-between mb-1">
                 <span>مستوى الإنجاز</span>
@@ -111,7 +106,6 @@
               ></v-progress-linear>
             </div>
 
-            <!-- ✅ رسالة تحفيزية -->
             <v-alert
               class="mt-6"
               :color="progressColor"
@@ -125,7 +119,6 @@
           </v-card-text>
         </v-card>
 
-        <!-- 🎯 كارت الأهداف والمكافآت -->
         <v-card class="mt-6 rounded-xl border" elevation="3">
           <v-card-title class="text-h6 font-weight-bold"
             >🎯 أهدافك القادمة</v-card-title
@@ -156,7 +149,6 @@
           </v-card-text>
         </v-card>
 
-        <!-- ✅ قسم سحب الأرباح -->
         <v-card class="mt-6 rounded-xl border" elevation="3">
           <v-card-title class="text-h6 font-weight-bold">
             💰 سحب الأرباح
@@ -197,7 +189,6 @@
               إرسال طلب السحب
             </v-btn>
 
-            <!-- ✅ عرض آخر طلبات السحب -->
             <v-divider class="my-4" />
             <h3 class="text-h6 font-weight-bold mb-3">
               🧾 طلبات السحب السابقة
@@ -230,7 +221,6 @@
           </v-card-text>
         </v-card>
 
-        <!-- ✅ لا توجد بيانات -->
         <v-alert
           v-if="!user || Object.keys(user).length === 0"
           type="info"
@@ -369,12 +359,12 @@ export default {
       const now = new Date();
       const diffDays = Math.max(
         Math.floor((now - createdAt) / (1000 * 60 * 60 * 24)),
-        1
+        1,
       );
 
       let growthRate = Math.min(
         (totalOrders / diffDays) * 100,
-        totalOrders * 0.5
+        totalOrders * 0.5,
       );
       growthRate = Math.round(growthRate);
 
@@ -414,15 +404,56 @@ export default {
       ];
     },
 
+    // 🛠️ دالة مساعدة لضغط الصورة والحفاظ على الأبعاد الأصلية تماماً بدون تعديل شكلها
+    compressImageAsync(file, quality = 0.6) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+          const img = new Image();
+          img.src = event.target.result;
+          img.onload = () => {
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+
+            // أخذ نفس الطول والعرض الأصليين دون مساس
+            canvas.width = img.width;
+            canvas.height = img.height;
+
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+            canvas.toBlob(
+              (blob) => {
+                if (blob) {
+                  resolve(new File([blob], file.name, { type: "image/jpeg" }));
+                } else {
+                  reject(new Error("Canvas context is empty"));
+                }
+              },
+              "image/jpeg",
+              quality, // نسبة الضغط والجودة المحددة
+            );
+          };
+          img.onerror = (err) => reject(err);
+        };
+        reader.onerror = (err) => reject(err);
+      });
+    },
+
     async uploadPhoto(e) {
-      const file = e.target.files[0];
+      let file = e.target.files[0];
       if (!file) return;
 
       const token = localStorage.getItem("token");
-      const formData = new FormData();
-      formData.append("img", file);
 
       try {
+        // 1️⃣ ضغط حجم الصورة العشوائي قبل تجميع الـ FormData
+        file = await this.compressImageAsync(file, 0.6);
+
+        const formData = new FormData();
+        formData.append("img", file);
+
+        // 2️⃣ إرسال الملف المضغوط إلى الخادم
         await axios.post(`${this.domin}user/addPhoto`, formData, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -440,7 +471,7 @@ export default {
         this.updateGoals();
       } catch (err) {
         console.error(err.response?.data || err);
-        alert("❌ حدث خطأ أثناء رفع الصورة");
+        alert("❌ حدث خطأ أثناء معالجة أو رفع الصورة");
       }
     },
 
@@ -448,11 +479,11 @@ export default {
       const token = localStorage.getItem("token");
       try {
         await axios.post(
-          `${this.domin}logout`,
+          `${this.this.domin}logout`,
           {},
           {
             headers: { Authorization: `Bearer ${token}` },
-          }
+          },
         );
         this.logoutin();
         this.$router.push({ name: "home" });
@@ -464,41 +495,37 @@ export default {
       const token = localStorage.getItem("token");
 
       try {
-        // ✅ تحقق من المبلغ
         if (!amount || amount <= 0) {
           alert("الرجاء إدخال مبلغ صالح للسحب");
           return;
         }
 
-        // ✅ تحقق من وجود طلب قيد المراجعة
         const hasPending = this.PayRequst?.some(
-          (req) => req.status === "pending"
+          (req) => req.status === "pending",
         );
         if (hasPending) {
           alert(
-            "⚠️ لديك طلب سحب قيد المراجعة بالفعل، يرجى الانتظار حتى يتم الرد عليه"
+            "⚠️ لديك طلب سحب قيد المراجعة بالفعل، يرجى الانتظار حتى يتم الرد عليه",
           );
           return;
         }
 
-        // ✅ تحقق من الرصيد المتاح
         const available = this.sellermyProfits?.available_profit || 0;
         if (amount > available) {
           alert(
-            `❌ لا يمكنك سحب ${amount} ج.م لأن رصيدك المتاح هو ${available} ج.م فقط`
+            `❌ لا يمكنك سحب ${amount} ج.م لأن رصيدك المتاح هو ${available} ج.م فقط`,
           );
           return;
         }
 
-        // ✅ إرسال الطلب
         await axios.post(
           `${this.domin}seller/withdraw`,
           { amount: amount, note: note || null },
-          { headers: { Authorization: `Bearer ${token}` } }
+          { headers: { Authorization: `Bearer ${token}` } },
         );
 
         alert("✅ تم إرسال طلب السحب بنجاح!");
-        this.sellerPayRequst(); // تحديث الطلبات بعد الإرسال
+        this.sellerPayRequst();
       } catch (err) {
         console.error("❌ خطأ أثناء إرسال الطلب:", err.response?.data || err);
         alert("حدث خطأ أثناء إرسال الطلب، حاول لاحقًا.");

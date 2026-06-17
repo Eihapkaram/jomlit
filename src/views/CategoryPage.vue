@@ -236,7 +236,7 @@ export default {
       this.load = false;
     }, 500);
 
-    document.title = `${this.$route.params.catigory} | جملة الجملة`;
+    document.title = `${this.$route.params.catigory} | تاجر البلد`;
 
     let desc = document.querySelector('meta[name="description"]');
     if (desc)

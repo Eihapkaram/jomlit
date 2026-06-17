@@ -6,7 +6,6 @@
   >
     <div id="zcon" dir="rtl">
       <v-row>
-        <!-- صور المنتج -->
         <v-col id="c1" cols="12" lg="6" md="6" sm="12">
           <div class="text-center">
             <div v-if="this.SingleProduct.stock < 1" id="avol">
@@ -54,7 +53,6 @@
           </div>
         </v-col>
 
-        <!-- تفاصيل المنتج -->
         <v-col cols="12" lg="6" md="12" sm="12" id="c2">
           <div id="con2" class="product-details">
             <v-card elevation="3" class="pa-6 rounded-xl food-card">
@@ -197,7 +195,6 @@
             </v-card>
           </div>
 
-          <!-- حاوية المراجعات -->
           <div class="reviews-section-container">
             <div class="reviews-header-block">
               <div class="d-flex align-center gap-2">
@@ -216,7 +213,6 @@
               </v-chip>
             </div>
 
-            <!-- قائمة عرض التعليقات -->
             <div id="revews" class="reviews-scroll-area">
               <v-list-item class="pa-0 w-100">
                 <div class="no-reviews-fallback" v-if="this.Reviwes.length < 1">
@@ -235,72 +231,136 @@
                   <div
                     v-for="(rev, i) in this.Reviwes"
                     :key="i"
-                    class="review-modern-card"
+                    class="review-modern-card flex-column align-stretch"
                   >
-                    <v-avatar
-                      v-if="rev.user.img !== 'null'"
-                      :image="domin + rev.user.img"
-                      size="44"
-                      class="review-user-avatar elevation-1"
-                    ></v-avatar>
+                    <div class="d-flex align-start gap-2 w-100">
+                      <v-avatar
+                        v-if="rev.user.img !== 'null'"
+                        :image="domin + rev.user.img"
+                        size="44"
+                        class="review-user-avatar elevation-1"
+                      ></v-avatar>
 
-                    <v-avatar
-                      v-if="rev.user.img == 'null'"
-                      color="green-lighten-5"
-                      size="44"
-                      class="review-user-avatar"
-                    >
-                      <v-icon color="green-darken-2" size="20"
-                        >mdi-account</v-icon
+                      <v-avatar
+                        v-if="rev.user.img == 'null'"
+                        color="green-lighten-5"
+                        size="44"
+                        class="review-user-avatar"
                       >
-                    </v-avatar>
+                        <v-icon color="green-darken-2" size="20"
+                          >mdi-account</v-icon
+                        >
+                      </v-avatar>
 
-                    <div class="review-body-content">
-                      <div class="review-top-meta">
-                        <span class="user-fullname">
-                          {{ rev.user.name }} {{ rev.user.last_name }}
-                        </span>
+                      <div class="review-body-content">
+                        <div class="review-top-meta">
+                          <span class="user-fullname">
+                            {{ rev.user.name }} {{ rev.user.last_name }}
+                          </span>
 
-                        <div class="review-action-group">
-                          <v-btn
-                            icon
-                            variant="text"
-                            size="x-small"
-                            color="blue-darken-1"
-                            class="control-action-btn"
-                            @click="openEditDialog(rev)"
+                          <!-- أزرار التحكم تظهر فقط إذا كان المستخدم الحالي هو صاحب التعليق -->
+                          <div
+                            v-if="
+                              rev.user_id === userinfo.id &&
+                              (!editDialog || selectedReviewId !== rev.id)
+                            "
+                            class="review-action-group"
                           >
-                            <v-icon size="16">mdi-pencil-outline</v-icon>
-                            <v-tooltip activator="parent" location="top"
-                              >تعديل</v-tooltip
+                            <v-btn
+                              icon
+                              variant="text"
+                              size="x-small"
+                              color="blue-darken-1"
+                              class="control-action-btn"
+                              @click="openEditDialog(rev)"
                             >
+                              <v-icon size="16">mdi-pencil-outline</v-icon>
+                              <v-tooltip activator="parent" location="top"
+                                >تعديل</v-tooltip
+                              >
+                            </v-btn>
+                            <v-btn
+                              icon
+                              variant="text"
+                              size="x-small"
+                              color="red-lighten-1"
+                              class="control-action-btn"
+                              @click="deleteReview(rev.id)"
+                            >
+                              <v-icon size="16">mdi-delete-outline</v-icon>
+                              <v-tooltip activator="parent" location="top"
+                                >حذف</v-tooltip
+                              >
+                            </v-btn>
+                          </div>
+                        </div>
+
+                        <div
+                          v-if="!editDialog || selectedReviewId !== rev.id"
+                          class="review-speech-bubble"
+                        >
+                          {{ rev.comment }}
+                        </div>
+                      </div>
+                    </div>
+
+                    <v-expand-transition>
+                      <div
+                        v-if="editDialog && selectedReviewId === rev.id"
+                        class="mt-3 pa-3 bg-grey-lighten-5 rounded-lg border"
+                      >
+                        <div
+                          class="text-subtitle-2 font-weight-bold mb-2 text-blue-darken-1"
+                        >
+                          <v-icon size="18" class="ml-1"
+                            >mdi-pencil-outline</v-icon
+                          >تعديل تعليقك الحالي:
+                        </div>
+                        <v-textarea
+                          v-model="selectedReviewComment"
+                          placeholder="اكتب تعليقك الجديد هنا..."
+                          variant="outlined"
+                          color="green"
+                          rows="3"
+                          no-resize
+                          counter="500"
+                          maxlength="500"
+                          density="comfortable"
+                          bg-color="white"
+                          :rules="[
+                            (v) => !!v.trim() || 'لا يمكن ترك التعليق فارغاً',
+                          ]"
+                        ></v-textarea>
+                        <div class="d-flex justify-end gap-2 mt-2">
+                          <v-btn
+                            color="grey-darken-1"
+                            variant="text"
+                            size="small"
+                            rounded
+                            @click="editDialog = false"
+                          >
+                            إلغاء
                           </v-btn>
                           <v-btn
-                            icon
-                            variant="text"
-                            size="x-small"
-                            color="red-lighten-1"
-                            class="control-action-btn"
-                            @click="deleteReview(rev.id)"
+                            color="green-darken-2"
+                            variant="flat"
+                            size="small"
+                            class="text-white px-4"
+                            rounded
+                            :disabled="!selectedReviewComment.trim()"
+                            :loading="loadingUpdate"
+                            @click="updateReview"
                           >
-                            <v-icon size="16">mdi-delete-outline</v-icon>
-                            <v-tooltip activator="parent" location="top"
-                              >حذف</v-tooltip
-                            >
+                            حفظ التعديل
                           </v-btn>
                         </div>
                       </div>
-
-                      <div class="review-speech-bubble">
-                        {{ rev.comment }}
-                      </div>
-                    </div>
+                    </v-expand-transition>
                   </div>
                 </transition-group>
               </v-list-item>
             </div>
 
-            <!-- فورم إضافة مراجعة جديدة -->
             <div class="add-review-form-card">
               <div class="form-title-mini">
                 <v-icon size="18" color="green" class="ml-1"
@@ -346,50 +406,6 @@
         </v-col>
       </v-row>
     </div>
-
-    <!-- الـ Popup الخاص بتعديل المراجعة -->
-    <v-dialog v-model="editDialog" max-width="500px" persistent>
-      <v-card class="rounded-xl pa-4" dir="rtl">
-        <v-card-title class="text-h6 font-weight-bold mb-2">
-          <v-icon color="blue-darken-1" class="ml-2">mdi-pencil-outline</v-icon>
-          تعديل التعليق
-        </v-card-title>
-        <v-card-text>
-          <v-textarea
-            v-model="selectedReviewComment"
-            placeholder="اكتب تعليقك الجديد هنا..."
-            variant="outlined"
-            color="green"
-            rows="4"
-            no-resize
-            counter="500"
-            maxlength="500"
-            :rules="[(v) => !!v.trim() || 'لا يمكن ترك التعليق فارغاً']"
-          ></v-textarea>
-        </v-card-text>
-        <v-card-actions class="justify-end gap-2">
-          <v-btn
-            color="grey-darken-1"
-            variant="text"
-            rounded
-            @click="editDialog = false"
-          >
-            إلغاء
-          </v-btn>
-          <v-btn
-            color="green-darken-2"
-            variant="flat"
-            class="text-white px-4"
-            rounded
-            :disabled="!selectedReviewComment.trim()"
-            :loading="loadingUpdate"
-            @click="updateReview"
-          >
-            حفظ التعديل
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
   </v-lazy>
 </template>
 
@@ -427,6 +443,8 @@ export default {
       selectedReviewId: null,
       selectedReviewComment: "",
       loadingUpdate: false,
+
+      currentUserId: null, // لحفظ معرف المستخدم الحالي المسجل للتحقق
     };
   },
   setup() {
@@ -435,7 +453,13 @@ export default {
     };
   },
   computed: {
-    ...mapState(mystore, ["SingleProduct", "Reviwes", "domin", "countReviws"]),
+    ...mapState(mystore, [
+      "SingleProduct",
+      "Reviwes",
+      "domin",
+      "countReviws",
+      "userinfo",
+    ]),
   },
   watch: {
     SingleProduct: {
@@ -454,6 +478,40 @@ export default {
     ...mapActions(mystore, ["getSingle", "getReviwes"]),
     ...mapActions(CartStore1, ["Additem2"]),
     ...mapActions(ListsStore1, ["AdditemL"]),
+
+    // دالة التحقق من ملكية التعليق
+    isReviewOwner(review) {
+      if (!this.currentUserId) return false;
+      // يدعم التحقق سواء كان المعرف مباشرة في الـ user أو كـ user_id قادم من الـ API
+      const reviewUserId = review.user_id || review.user?.id;
+      return String(reviewUserId) === String(this.currentUserId);
+    },
+
+    // دالة استخراج بيانات المستخدم من الـ localStorage (إذا كان الـ token عبارة عن JWT ويحتوي على البيانات)
+    // أو يمكنك تعديلها ليجلب الـ ID مباشرة من الـ User Store الخاص بك إذا كان متوفراً هناك.
+    getCurrentUserFromToken() {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      try {
+        const base64Url = token.split(".")[1];
+        const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+        const jsonPayload = decodeURIComponent(
+          atob(base64)
+            .split("")
+            .map(function (c) {
+              return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+            })
+            .join(""),
+        );
+
+        const payload = JSON.parse(jsonPayload);
+        // التعديل حسب بنية الـ payload للـ JWT عندك (مثال: payload.id أو payload.user.id)
+        this.currentUserId = payload.id || payload.user?.id;
+      } catch (e) {
+        console.error("خطأ في قراءة الـ Token:", e);
+      }
+    },
+
     Add(item) {
       this.SingleProduct.quantity = this.quint;
       this.Additem2(item);
@@ -510,7 +568,6 @@ export default {
       this.reveiwe = "";
       this.reviewPage = 1;
 
-      // تحريك الاسكرول تلقائياً لأسفل صندوق التعليقات
       this.$nextTick(() => {
         const reviewsBox = document.querySelector("#revews");
         if (reviewsBox) {
@@ -534,23 +591,33 @@ export default {
       const token = localStorage.getItem("token");
       this.loadingUpdate = true;
       try {
-        const res = await axios.post(
+        await axios.put(
           `${this.domin}update/reviwe/${this.selectedReviewId}`,
           { comment: this.selectedReviewComment.trim() },
           { headers: { Authorization: `Bearer ${token}` } },
         );
-        console.log("تم تعديل المراجعة:", res.data);
         await this.getReviwes(this.$route.params.idparam);
         this.editDialog = false;
       } catch (err) {
         console.error("خطأ أثناء التعديل:", err.response?.data || err);
+        this.Emitter.emit("sin", "حدث خطأ أثناء تعديل المراجعة");
       } finally {
         this.loadingUpdate = false;
       }
     },
 
-    deleteReview(reviewId) {
-      console.log("حذف المراجعة ذات الرقم:", reviewId);
+    async deleteReview(reviewId) {
+      const token = localStorage.getItem("token");
+      try {
+        await axios.delete(
+          `${this.domin}delete/reviwe/${this.$route.params.idparam}/${reviewId}`,
+          { headers: { Authorization: `Bearer ${token}` } },
+        );
+        await this.getReviwes(this.$route.params.idparam);
+      } catch (err) {
+        console.error("خطأ أثناء الحذف:", err.response?.data || err);
+        this.Emitter.emit("sin", "حدث خطأ أثناء حذف المراجعة");
+      }
     },
 
     Addtolist(item) {
@@ -603,6 +670,7 @@ export default {
   },
 
   async mounted() {
+    this.getCurrentUserFromToken(); // جلب معرف المستخدم الحالي عند التحميل
     await this.getSingle(this.$route.params.idparam);
     await this.getReviwes(this.$route.params.idparam);
     this.initReviewScroll();
@@ -615,7 +683,7 @@ export default {
         document.querySelector("#big-img").src = sr;
       };
     });
-    document.title = `${this.SingleProduct.titel} | جملة الجملة`;
+    document.title = `${this.SingleProduct.titel} | تاجر البلد`;
     let desc = document.querySelector('meta[name="description"]');
     if (desc) desc.setAttribute("content", this.SingleProduct.description);
   },
@@ -951,6 +1019,12 @@ export default {
   }
 }
 @media (max-width: 500px) {
+  #c1 {
+    flex: 0 0;
+    max-width: 96%;
+    width: auto;
+    padding: 0px;
+  }
   #plus {
     position: relative;
     left: 50px;

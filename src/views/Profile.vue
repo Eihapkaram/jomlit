@@ -2,7 +2,6 @@
   <v-container class="py-8" dir="rtl">
     <v-row justify="center">
       <v-col cols="12" md="6">
-        <!-- ✅ كارت بيانات المشتري -->
         <v-card class="rounded-xl shadow-sm border" variant="outlined">
           <v-card-title class="d-flex align-center justify-space-between">
             <div class="d-flex align-center gap-3">
@@ -33,7 +32,6 @@
           <v-divider></v-divider>
 
           <v-card-text class="text-body-2">
-            <!-- ✅ زر رفع الصورة -->
             <div class="mb-4 text-center">
               <v-btn
                 color="darkgold"
@@ -55,7 +53,6 @@
 
             <v-divider class="my-4"></v-divider>
 
-            <!-- ✅ معلومات الحساب -->
             <div class="d-flex justify-space-between py-2">
               <span>رقم الهاتف:</span>
               <span>{{ user.phone || "غير محدد" }}</span>
@@ -78,24 +75,29 @@
               }}</span>
             </div>
 
-            <!-- ✅ شريط مستوى النشاط -->
-            <v-divider class="my-4"></v-divider>
-            <h4 class="text-subtitle-2 font-weight-bold mb-2">
+            <v-divider v-if="user.role == 'customer'" class="my-4"></v-divider>
+            <h4
+              v-if="user.role == 'customer'"
+              class="text-subtitle-2 font-weight-bold mb-2"
+            >
               مستوى نشاطك كتاجر
             </h4>
             <v-progress-linear
+              v-if="user.role == 'customer'"
               :model-value="count ? Math.min(count * 10, 100) : 0"
               color="darkgold"
               height="10"
               rounded
             ></v-progress-linear>
-            <p class="text-caption mt-2 text-center">
+            <p
+              v-if="user.role == 'customer'"
+              class="text-caption mt-2 text-center"
+            >
               {{ getActivityText(count) }}
             </p>
           </v-card-text>
         </v-card>
 
-        <!-- ✅ لا توجد بيانات -->
         <v-alert
           v-if="!user || Object.keys(user).length === 0"
           type="info"
@@ -115,7 +117,7 @@ import axios from "axios";
 import { mystore } from "@/store";
 
 const store = mystore();
-const count = ref(0); // سيتم تحديثه تلقائيًا
+const count = ref(0);
 const domin = store.domin;
 const router = useRouter();
 const user = ref({});
@@ -129,15 +131,13 @@ onMounted(async () => {
     return;
   }
 
-  // تحديث عدد الطلبات تلقائيًا
   try {
-    await store.orderCountfun(); // دالة في الـ store تجلب عدد الطلبات
-    count.value = store.orderCoun; // تحديث reactive count
+    await store.orderCountfun();
+    count.value = store.orderCoun;
   } catch (err) {
     console.error(err);
   }
 
-  // تحميل بيانات المستخدم
   try {
     const res = await axios.get(`${store.domin}user/info`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -148,16 +148,58 @@ onMounted(async () => {
   }
 });
 
-// ✅ رفع الصورة وتحديثها
+// 🛠️ دالة مساعدة لضغط الصورة والحفاظ على أبعادها الأصلية
+function compressImage(file, quality = 0.6) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target.result;
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+
+        // استخدام الأبعاد الأصلية للصورة تماماً دون تغيير
+        canvas.width = img.width;
+        canvas.height = img.height;
+
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        // هنا يتم الضغط وتقليص الحجم الفعلي للملف عبر تقليل الجودة (Quality)
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              // إرجاع الملف الجديد بنفس الاسم الأصلي
+              resolve(new File([blob], file.name, { type: "image/jpeg" }));
+            } else {
+              reject(new Error("Canvas to Blob conversion failed"));
+            }
+          },
+          "image/jpeg",
+          quality, // نسبة الجودة من 0.0 إلى 1.0 (0.6 تعتبر ممتازة لتقليل المساحة بشكل كبير جداً وبجودة ممتازة)
+        );
+      };
+      img.onerror = (err) => reject(err);
+    };
+    reader.onerror = (err) => reject(err);
+  });
+}
+
+// ✅ رفع الصورة وتحديثها بعد الضغط
 async function uploadPhoto(e) {
-  const file = e.target.files[0];
+  let file = e.target.files[0];
   if (!file) return;
 
-  const token = localStorage.getItem("token");
-  const formData = new FormData();
-  formData.append("img", file);
-
   try {
+    // 1️⃣ ضغط الصورة أولاً قبل إرسالها (سيتم خفض حجمها لأكثر من 60% من حجمها الأصلي)
+    file = await compressImage(file, 0.6);
+
+    const token = localStorage.getItem("token");
+    const formData = new FormData();
+    formData.append("img", file);
+
+    // 2️⃣ إرسال الصورة المضغوطة للسيرفر
     const res = await axios.post(`${store.domin}user/addPhoto`, formData, {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -166,17 +208,15 @@ async function uploadPhoto(e) {
     });
 
     user.value.img = res.data.photo;
-    try {
-      const res = await axios.get(`${store.domin}user/info`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      user.value = res.data.user || res.data;
-    } catch (err) {
-      console.error(err.response?.data || err);
-    }
+
+    // إعادة جلب بيانات المستخدم للتأكيد والـ Reactivity
+    const userRes = await axios.get(`${store.domin}user/info`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    user.value = userRes.data.user || userRes.data;
   } catch (err) {
     console.error(err.response?.data || err);
-    alert("❌ حدث خطأ أثناء رفع الصورة");
+    alert("❌ حدث خطأ أثناء معالجة أو رفع الصورة");
   }
 }
 
@@ -187,7 +227,7 @@ async function logout() {
     await axios.post(
       `${domin}logout`,
       {},
-      { headers: { Authorization: `Bearer ${token}` } }
+      { headers: { Authorization: `Bearer ${token}` } },
     );
   } catch {}
   store.logoutin();
