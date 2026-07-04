@@ -302,6 +302,7 @@ export default {
   border-radius: 15px;
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
   overflow: hidden;
+  width: 300px;
   transition: transform 0.3s, box-shadow 0.3s;
 }
 .card:hover {
