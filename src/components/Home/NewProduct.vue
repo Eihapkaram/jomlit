@@ -259,14 +259,15 @@ export default {
   gap: 25px;
 }
 
-.card {
+.product-card {
   background: white;
   border-radius: 15px;
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
   overflow: hidden;
+  width: 337px;
   transition: transform 0.3s, box-shadow 0.3s;
 }
-.card:hover {
+.product-card:hover {
   transform: translateY(-6px);
   box-shadow: 0 6px 20px rgba(125, 164, 83, 0.2);
 }
