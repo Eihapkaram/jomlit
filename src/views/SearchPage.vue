@@ -15,7 +15,6 @@
             left: 0;
             align-content: center;
             z-index: 5;
-            width: 100%;
             height: fit-content;
             background-color: lightcoral;
           "
